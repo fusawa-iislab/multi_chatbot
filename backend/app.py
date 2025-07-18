@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from llm import get_response
+from prompt import create_prompt
 
 from test_data import chat_rooms_data
 
@@ -48,7 +49,9 @@ async def chat_reply(chat_room_id: int, request: Request):
         print(f"User {person.name} cannot be a chatbot in chat room {chat_room_id}")
         return {"error": "User cannot be a chatbot"}, 400
     
-    response_text = "a"
+    # 将来的に構造化します
+    prompt = create_prompt(chat_room, person)
+    response_text = get_response(prompt, max_output_tokens=1000)
     chat_room.add_chat_data(name=person.name, content=response_text, chat_room_id=chat_room_id)
     return chat_room.chat_datas[-1].to_frontend()
 

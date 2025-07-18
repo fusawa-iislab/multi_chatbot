@@ -6,8 +6,8 @@ class ChatRoom:
     def __init__(self, title: str, persons: list | None = None, chat_datas: list | None = None):
         self.id = ChatRoom.id
         ChatRoom.id += 1
-        self.persons = persons or []
-        self.chat_datas = chat_datas or []
+        self.persons: list[Person] = persons or []
+        self.chat_datas: list[ChatData] = chat_datas or []
         self.title = title
 
     def __repr__(self):
@@ -38,3 +38,6 @@ class ChatRoom:
         chat_data = ChatData(name=name, content=content, chat_room_id=chat_room_id)
         self.chat_datas.append(chat_data)
         return
+    
+    
+    
