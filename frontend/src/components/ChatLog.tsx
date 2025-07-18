@@ -1,13 +1,9 @@
 "use client";
 import { useEffect, useRef } from "react";
-
-type DisplayChatData = {
-	name: string;
-	content: string;
-};
+import type { ChatDataType } from "../types";
 
 type ChatLogProps = {
-	chatLog: DisplayChatData[];
+	chatLog: ChatDataType[];
 };
 
 export const ChatLog: React.FC<ChatLogProps> = ({ chatLog }) => {
@@ -29,7 +25,7 @@ export const ChatLog: React.FC<ChatLogProps> = ({ chatLog }) => {
 			className="flex flex-col bg-gray-900 mb-4 w-[95%] max-h-[50vh] overflow-y-auto border border-gray-300 divide-y divide-gray-300"
 		>
 			{chatLog.map((chat) => (
-				<div key={chat.content} className="p-2 bg-transparent">
+				<div key={chat.id} className="p-2 bg-transparent">
 					<p className="text-xs">{chat.name}:</p>
 					<p>{chat.content}</p>
 				</div>

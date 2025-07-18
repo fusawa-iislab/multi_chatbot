@@ -39,12 +39,7 @@ export const ChatRoom = () => {
 			<h1 className="text-2xl font-bold mb-2">Chatroom</h1>
 			<div className="w-full flex flex-col items-center mb-3">
 				<h2 className="text-xl font-bold mb-2 self-start">Chat Log</h2>
-				<ChatLog
-					chatLog={(chatRoom?.chatDatas ?? []).map((chat) => ({
-						name: chat.name,
-						content: chat.content,
-					}))}
-				/>
+				<ChatLog chatLog={chatRoom.chatDatas} />
 			</div>
 			<div>
 				<PersonInfoList
