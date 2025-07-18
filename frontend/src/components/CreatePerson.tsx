@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { ChatbotInput } from "../types";
+import type { ChatbotInput } from "../types";
 
 export const CreatePerson = () => {
   const [personText, setPersonText] = useState<ChatbotInput>({
@@ -53,9 +53,11 @@ export const CreatePerson = () => {
       <textarea
         placeholder="personaの情報を入力してください"
         onChange={(e) => onChangeInput(e, "persona")}
-      ></textarea>
+      />
 
-      <button onClick={submitPerson}>Create</button>
+      <button type="button" onClick={submitPerson}>
+        Create
+      </button>
     </div>
   );
 };

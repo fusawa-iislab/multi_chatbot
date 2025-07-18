@@ -1,12 +1,14 @@
 "use client";
-import useSWR from "swr";
 import { useParams } from "next/navigation";
+import useSWR from "swr";
 
-import { ChatRoomType } from "../types";
+import type { ChatRoomType } from "../types";
 import { ChatLog } from "./ChatLog";
 import { PersonInfoList } from "./PersonsInfoList";
 
-const ChatRoomFetcher = async (url: string): Promise<ChatRoomType | undefined> => {
+const ChatRoomFetcher = async (
+  url: string,
+): Promise<ChatRoomType | undefined> => {
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error("Failed to fetch chat rooms");
@@ -16,14 +18,14 @@ const ChatRoomFetcher = async (url: string): Promise<ChatRoomType | undefined> =
     console.error(error);
     return undefined;
   }
-}
+};
 
 export const ChatRoom = () => {
   const { id: chatRoomId } = useParams();
 
   const { data: chatRoom, error: chatRoomError } = useSWR(
     chatRoomId ? `/api/chatrooms/${chatRoomId}` : null,
-    ChatRoomFetcher
+    ChatRoomFetcher,
   );
 
   const isLoading = !chatRoom && !chatRoomError;
@@ -45,7 +47,10 @@ export const ChatRoom = () => {
         />
       </div>
       <div>
-        <PersonInfoList persons={(chatRoom?.persons ?? [])} chatRoomId={Number(chatRoomId)} />
+        <PersonInfoList
+          persons={chatRoom?.persons ?? []}
+          chatRoomId={Number(chatRoomId)}
+        />
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ export type ChatRoomType = {
   persons: Person[];
   chatDatas: ChatData[];
   title: string;
-}
+};
 
 export type PersonType = {
   name: string;
