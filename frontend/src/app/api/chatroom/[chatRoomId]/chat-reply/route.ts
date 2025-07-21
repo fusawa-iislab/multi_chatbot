@@ -11,7 +11,7 @@ export async function POST(
 		return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 	}
 	const data = await fetch(
-		`${process.env.BACKEND_API_URL}/api/chatrooms/${chatRoomId}/chat-reply`,
+		`${process.env.BACKEND_API_URL}/api/chatroom/${chatRoomId}/chat-reply`,
 		{
 			method: "POST",
 			headers: { "Content-Type": "application/json" },

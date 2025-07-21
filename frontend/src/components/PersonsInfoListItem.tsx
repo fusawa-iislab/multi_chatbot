@@ -12,14 +12,14 @@ export const PersonsInfoListItem: React.FC<{
 	const [userMessage, setUserMessage] = useState<string>("");
 
 	const ChatBotReply = async (personId: number) => {
-		const resText = await fetch(`/api/chatrooms/${chatRoomId}/chat-reply`, {
+		const resText = await fetch(`/api/chatroom/${chatRoomId}/chat-reply`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ personId }),
 		})
 			.then((res) => {
 				if (!res.ok) throw new Error("Failed to get reply");
-				mutate(`/api/chatrooms/${chatRoomId}`);
+				mutate(`/api/chatroom/${chatRoomId}`);
 			})
 			.catch((error) => {
 				console.error("Error getting reply:", error);
@@ -37,7 +37,7 @@ export const PersonsInfoListItem: React.FC<{
 			return;
 		}
 
-		const res = await fetch(`/api/chatrooms/${chatRoomId}/user-chat`, {
+		const res = await fetch(`/api/chatroom/${chatRoomId}/user-chat`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ personId: person.id, content: userMessage }),

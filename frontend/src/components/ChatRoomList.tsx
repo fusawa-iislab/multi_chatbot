@@ -2,6 +2,8 @@
 import Link from "next/link";
 import useSWR from "swr";
 
+import { Plus } from "phosphor-react";
+
 import type { ChatRoomType } from "../types";
 
 const ChatRoomFetcher = async (url: string): Promise<ChatRoomType[]> => {
@@ -20,11 +22,17 @@ export const ChatRoomList = () => {
 	if (!chatRooms) return <div>Loading...</div>;
 
 	return (
-		<div>
+		<div className="p-4">
 			<h2 className="text-2xl font-bold mb-4">Chat Rooms</h2>
+			<Link href="/chatroom/create" className="flex items-center gap-2 my-4">
+				<div className="flex flex-col items-center gap-2 px-10 py-4 border border-white rounded-lg shadow hover:shadow-lg transition-shadow">
+					<Plus size={24} />
+					<span>Create</span>
+				</div>
+			</Link>
 			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
 				{chatRooms.map((room) => (
-					<Link key={room.id} href={`/chatrooms/${room.id}`}>
+					<Link key={room.id} href={`/chatroom/${room.id}`}>
 						<div className="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow">
 							<p className="text-lg font-semibold">{room.title}</p>
 						</div>

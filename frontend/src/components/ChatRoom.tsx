@@ -24,7 +24,7 @@ export const ChatRoom = () => {
 	const { id: chatRoomId } = useParams();
 
 	const { data: chatRoom, error: chatRoomError } = useSWR(
-		chatRoomId ? `/api/chatrooms/${chatRoomId}` : null,
+		chatRoomId ? `/api/chatroom/${chatRoomId}` : null,
 		ChatRoomFetcher,
 	);
 

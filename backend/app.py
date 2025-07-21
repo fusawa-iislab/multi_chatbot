@@ -25,14 +25,14 @@ app.add_middleware(
 async def get_chat_rooms():
     return [room.to_frontend() for room in chat_rooms_data]
 
-@app.get("/api/chatrooms/{chat_room_id}")
+@app.get("/api/chatroom/{chat_room_id}")
 async def get_chat_room(chat_room_id: int):
     chat_room = next((room for room in chat_rooms_data if room.id == chat_room_id), None)
     if chat_room:
         return chat_room.to_frontend()
     return {"error": "Chat room not found"}, 404
 
-@app.post("/api/chatrooms/{chat_room_id}/chat-reply")
+@app.post("/api/chatroom/{chat_room_id}/chat-reply")
 async def chat_reply(chat_room_id: int, request: Request):
     data = await request.json()
     print(f"Received data: {data}")
@@ -55,7 +55,7 @@ async def chat_reply(chat_room_id: int, request: Request):
     chat_room.add_chat_data(name=person.name, content=response_text, chat_room_id=chat_room_id)
     return chat_room.chat_datas[-1].to_frontend()
 
-@app.post("/api/chatrooms/{chat_room_id}/user-chat")
+@app.post("/api/chatroom/{chat_room_id}/user-chat")
 async def user_input(chat_room_id: int, request: Request):
     data = await request.json()
     person_id = data.get("personId")

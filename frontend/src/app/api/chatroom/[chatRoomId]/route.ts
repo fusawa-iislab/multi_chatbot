@@ -6,7 +6,7 @@ export async function GET(
 ) {
 	const { chatRoomId } = await context.params;
 	const data = await fetch(
-		`${process.env.BACKEND_API_URL}/api/chatrooms/${chatRoomId}`,
+		`${process.env.BACKEND_API_URL}/api/chatroom/${chatRoomId}`,
 	);
 	if (!data.ok) {
 		return NextResponse.json(
