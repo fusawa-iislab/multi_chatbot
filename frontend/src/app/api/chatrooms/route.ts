@@ -1,7 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import type { ChatRoomType } from "../../../types";
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
 	const data = await fetch(`${process.env.BACKEND_API_URL}/api/chatrooms`);
 	if (!data.ok) {
 		throw new Error("Network response was not ok");

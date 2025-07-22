@@ -21,7 +21,7 @@ const ChatRoomFetcher = async (
 };
 
 export const ChatRoom = () => {
-	const { id: chatRoomId } = useParams();
+	const { chatRoomId } = useParams<{ chatRoomId: string }>();
 
 	const { data: chatRoom, error: chatRoomError } = useSWR(
 		chatRoomId ? `/api/chatroom/${chatRoomId}` : null,
@@ -37,10 +37,12 @@ export const ChatRoom = () => {
 	return (
 		<div className="p-4 w-full">
 			<h1 className="text-2xl font-bold mb-2">Chatroom</h1>
-			<div className="w-full flex flex-col items-center mb-3">
-				<h2 className="text-xl font-bold mb-2 self-start">Chat Log</h2>
-				<ChatLog chatLog={chatRoom.chatDatas} />
-			</div>
+			{chatRoom.chatDatas.length > 0 && (
+				<div className="w-full flex flex-col items-center mb-3">
+					<h2 className="text-xl font-bold mb-2 self-start">Chat Log</h2>
+					<ChatLog chatLog={chatRoom.chatDatas} />
+				</div>
+			)}
 			<div>
 				<PersonInfoList
 					persons={chatRoom?.persons ?? []}

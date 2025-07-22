@@ -12,7 +12,7 @@ export const PersonsInfoListItem: React.FC<{
 	const [userMessage, setUserMessage] = useState<string>("");
 
 	const ChatBotReply = async (personId: number) => {
-		const resText = await fetch(`/api/chatroom/${chatRoomId}/chat-reply`, {
+		await fetch(`/api/chatroom/${chatRoomId}/chat-reply`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ personId }),

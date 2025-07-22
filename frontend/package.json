@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "prebuild": "npx @biomejs/biome check src",
     "biome": "npx @biomejs/biome check --write src"
   },
   "dependencies": {

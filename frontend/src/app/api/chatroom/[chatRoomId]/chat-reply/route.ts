@@ -3,10 +3,11 @@ import type { ChatDataType } from "../../../../../types";
 
 export async function POST(
 	request: NextRequest,
-	context: { params: { chatRoomId: string } },
+	{ params }: { params: { chatRoomId: string } },
 ) {
 	const { personId } = await request.json();
-	const { chatRoomId } = await context.params;
+
+	const chatRoomId = params.chatRoomId;
 	if (typeof personId !== "number") {
 		return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 	}
