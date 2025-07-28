@@ -10,29 +10,29 @@ def environment_prompt(chatroom: ChatRoom) -> str:
     person_names = ",".join([person.name for person in chatroom.persons])
 
     return (
-        f"ここでは、{person_names}の{len(chatroom.persons)}人が会話をしています。\n"
-        f"会話のタイトルは,{chatroom.title}です。\n"
+        f"Here, {person_names} ({len(chatroom.persons)} people) are having a conversation.\n"
+        f"The conversation title is: {chatroom.title}\n"
     )
 def personality_prompt(person: Person) -> str:
     return (
-        f"あなたは、{person.persona}な{person.name}です。\n"
+        f"You are {person.name}, who is {person.persona}.\n"
     )
 
 # def developer_prompt(chatroom: ChatRoom, person: Person) -> str:
 #     return (
 #         f"{environment_prompt(chatroom)}"
 #         f"{personality_prompt(chatroom, person)}"
-#         f"あなたは{person.name}として、これまでの会話の流れに沿って応答してください。\n"
+#         f"Please respond as {person.name} following the conversation flow so far.\n"
 #     )sss
 
 def user_prompt(chatroom: ChatRoom, person: Person) -> str:
     return (
         f"{environment_prompt(chatroom)}"
-        f"これまでの会話の流れ: \n"
+        f"Conversation history: \n"
         f"{chatlog_prompt(chatroom.chatdatas)}\n"
         f"{personality_prompt(person)}"
-        "これまでの会話の流れに沿って応答してください。\n"
-        "※人の名前が書いてある[]は出さないでください\n"
+        "Please respond following the conversation flow so far.\n"
+        "※Do not include the person's name in brackets []\n"
     )
 
 def create_prompt(chatroom: ChatRoom, person: Person):

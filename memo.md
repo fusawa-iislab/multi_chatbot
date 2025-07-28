@@ -1,19 +1,19 @@
 ## must
-- chatroomを作ろ時にbot以外の人を登録できない
+- Cannot register people other than bots when creating a chatroom
 
 
 
-## 改善できる部分(気づいているけど無視してる)
+## Areas for improvement (noticed but ignored)
 ### frontend
-- Fetcherまとめる
+- Consolidate Fetcher
 
 ### backend
-- chatlogをいちいちはじめから作らなくてもchatroomでキャッシュで保存？
+- Cache chatlog in chatroom instead of creating from scratch each time?
 
 
 
-## 変更してもいいところ
+## Areas that can be changed
 ### frontend
 
 ### backend
-- prompt作成関数をchatroomに持たせる。
+- Move prompt creation functions to chatroom.
