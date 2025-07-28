@@ -44,6 +44,15 @@ async def get_chatroom(chatroom_id: int):
         return chatroom.to_frontend()
     return {"error": "Chat room not found"}, 404
 
+@app.delete("/api/chatroom/{chatroom_id}")
+async def delete_chatroom(chatroom_id: int):
+    global chatrooms_data
+    chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
+    if not chatroom:
+        return {"error": "チャットルームが見つかりません"}, 404
+    chatrooms_data = [room for room in chatrooms_data if room.id != chatroom_id]
+    return {"message": "チャットルームが正常に削除されました"}
+
 @app.post("/api/chatroom/{chatroom_id}/chat-reply")
 async def chat_reply(chatroom_id: int, request: Request):
     data = await request.json()

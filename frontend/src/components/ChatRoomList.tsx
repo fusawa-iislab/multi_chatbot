@@ -1,12 +1,12 @@
 "use client";
 import Link from "next/link";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 
-import { Plus } from "phosphor-react";
+import { Plus, Trash } from "phosphor-react";
 
 import type { ChatRoomType } from "../types";
 
-const ChatRoomFetcher = async (url: string): Promise<ChatRoomType[]> => {
+const ChatRoomsFetcher = async (url: string): Promise<ChatRoomType[]> => {
 	const response = await fetch(url);
 	if (!response.ok) {
 		throw new Error("Network response was not ok");
@@ -16,10 +16,26 @@ const ChatRoomFetcher = async (url: string): Promise<ChatRoomType[]> => {
 };
 
 export const ChatRoomList = () => {
-	const { data: chatRooms, error } = useSWR("/api/chatrooms", ChatRoomFetcher);
+	const { data: chatRooms, error } = useSWR("/api/chatrooms", ChatRoomsFetcher);
 
 	if (error) return <div>Failed to load</div>;
 	if (!chatRooms) return <div>Loading...</div>;
+
+	const handleDelete = async (
+		e: React.MouseEvent<HTMLButtonElement>,
+		chatRoomId: number,
+	) => {
+		e.stopPropagation();
+		e.preventDefault();
+		const res = await fetch(`/api/chatroom/${chatRoomId}`, {
+			method: "DELETE",
+		});
+		if (!res.ok) {
+			alert("Failed to delete chat room");
+			return;
+		}
+		mutate("/api/chatrooms");
+	};
 
 	return (
 		<div className="p-4">
@@ -33,8 +49,11 @@ export const ChatRoomList = () => {
 			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
 				{chatRooms.map((room) => (
 					<Link key={room.id} href={`/chatroom/${room.id}`}>
-						<div className="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow">
+						<div className="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow flex items-center justify-between">
 							<p className="text-lg font-semibold">{room.title}</p>
+							<button onClick={(e) => handleDelete(e, room.id)} type="button">
+								<Trash size={24} />
+							</button>
 						</div>
 					</Link>
 				))}

@@ -2,10 +2,10 @@ import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(
 	request: NextRequest,
-	context: { params: { chatRoomId: string } },
+	{ params }: { params: Promise<{ chatRoomId: string }> },
 ) {
 	const { personId, content } = await request.json();
-	const { chatRoomId } = await context.params;
+	const { chatRoomId } = await params;
 
 	if (typeof content !== "string" || content.trim() === "") {
 		return NextResponse.json({ error: "Invalid request" }, { status: 400 });
