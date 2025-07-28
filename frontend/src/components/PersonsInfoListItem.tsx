@@ -50,7 +50,7 @@ export const PersonsInfoListItem: React.FC<{
 
 		setUserMessage("");
 		setTextareaIsOpen(false);
-		mutate(`/api/chatrooms/${chatRoomId}`);
+		mutate(`/api/chatroom/${chatRoomId}`);
 	};
 
 	return (

@@ -3,7 +3,7 @@ from ChatRoom import Person, ChatData, ChatRoom
 alice = Person("Alice", "親切で助けになろうとする人", chatroom_id=1)
 bob = Person("Bob", "好奇心旺盛で冒険好きな人", chatroom_id=1)
 charlie = Person("Charlie", "思慮深く賢い人", chatroom_id=1)
-you = Person("Yugo", "チャットボットと対話するユーザー", is_user=True, chatroom_id=1)
+you = Person("User", "チャットボットと対話するユーザー", is_user=True, chatroom_id=1)
 
 general_room = ChatRoom(
     title="General Chat Room",

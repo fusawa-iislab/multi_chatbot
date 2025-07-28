@@ -7,7 +7,7 @@ export async function POST(
 ) {
 	const { personId } = await request.json();
 
-	const chatRoomId = params.chatRoomId;
+	const chatRoomId = await params.chatRoomId;
 	if (typeof personId !== "number") {
 		return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 	}

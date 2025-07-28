@@ -23,7 +23,7 @@ def personality_prompt(person: Person) -> str:
 #         f"{environment_prompt(chatroom)}"
 #         f"{personality_prompt(chatroom, person)}"
 #         f"あなたは{person.name}として、これまでの会話の流れに沿って応答してください。\n"
-#     )
+#     )sss
 
 def user_prompt(chatroom: ChatRoom, person: Person) -> str:
     return (
