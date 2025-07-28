@@ -1,6 +1,13 @@
 class Person:
     id = 1
-    def __init__(self, name: str, persona: str, chatroom_id: int | None = None, is_user: bool = False):
+
+    def __init__(
+        self,
+        name: str,
+        persona: str,
+        chatroom_id: int | None = None,
+        is_user: bool = False,
+    ):
         self.id = Person.id
         Person.id += 1
         self.name = name
@@ -10,20 +17,20 @@ class Person:
 
     def __repr__(self):
         return f"Person(name={self.name}, persona={self.persona})"
-    
+
     def to_dict(self):
         return {
             "id": self.id,
             "name": self.name,
             "persona": self.persona,
             "chatroom_id": self.chatroom_id,
-            "is_user": self.is_user
+            "is_user": self.is_user,
         }
-    
+
     def to_frontend(self):
         return {
             "id": self.id,
             "name": self.name,
             "persona": self.persona,
-            "isUser": self.is_user
+            "isUser": self.is_user,
         }

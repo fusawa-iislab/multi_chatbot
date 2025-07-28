@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Request
-from dotenv import load_dotenv
 import os
+
+from ChatRoom import create_chatroom
+from dotenv import load_dotenv
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from llm import get_response
 from prompt import create_prompt
-from ChatRoom import ChatRoom, create_chatroom
 from test_data import chatrooms_data
 
 load_dotenv()
@@ -21,9 +22,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/api/chatrooms")
 async def get_chatrooms():
     return [room.to_frontend() for room in chatrooms_data]
+
 
 @app.post("/api/chatroom/create")
 async def create_new_chatroom(request: Request):
@@ -35,6 +38,7 @@ async def create_new_chatroom(request: Request):
     chatrooms_data.append(chatroom)
     return {"chatRoomId": chatroom.id}
 
+
 @app.get("/api/chatroom/{chatroom_id}")
 async def get_chatroom(chatroom_id: int):
     print(f"chatroom_id: {chatroom_id}")
@@ -43,6 +47,7 @@ async def get_chatroom(chatroom_id: int):
         print(chatroom.to_frontend())
         return chatroom.to_frontend()
     return {"error": "Chat room not found"}, 404
+
 
 @app.delete("/api/chatroom/{chatroom_id}")
 async def delete_chatroom(chatroom_id: int):
@@ -53,6 +58,7 @@ async def delete_chatroom(chatroom_id: int):
     chatrooms_data = [room for room in chatrooms_data if room.id != chatroom_id]
     return {"message": "チャットルームが正常に削除されました"}
 
+
 @app.post("/api/chatroom/{chatroom_id}/chat-reply")
 async def chat_reply(chatroom_id: int, request: Request):
     data = await request.json()
@@ -61,7 +67,7 @@ async def chat_reply(chatroom_id: int, request: Request):
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if not chatroom:
         print(f"Chat room {chatroom_id} not found")
-        return {"error": "Chat room not found"}, 404 
+        return {"error": "Chat room not found"}, 404
     person = next((p for p in chatroom.persons if p.id == person_id), None)
     if not person:
         print(f"Person with ID {person_id} not found in chat room {chatroom_id}")
@@ -72,8 +78,11 @@ async def chat_reply(chatroom_id: int, request: Request):
     # 将来的に構造化します
     prompt = create_prompt(chatroom, person)
     response_text = get_response(prompt, max_output_tokens=1000)
-    chatroom.add_chatdata(name=person.name, content=response_text, chatroom_id=chatroom_id)
+    chatroom.add_chatdata(
+        name=person.name, content=response_text, chatroom_id=chatroom_id
+    )
     return chatroom.chatdatas[-1].to_frontend()
+
 
 @app.post("/api/chatroom/{chatroom_id}/user-chat")
 async def user_input(chatroom_id: int, request: Request):
@@ -91,6 +100,7 @@ async def user_input(chatroom_id: int, request: Request):
 
     chatroom.add_chatdata(name=person.name, content=content, chatroom_id=chatroom_id)
     return {"message": "Message sent successfully"}
+
 
 @app.get("/")
 async def read_root():
