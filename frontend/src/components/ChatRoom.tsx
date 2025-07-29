@@ -1,6 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
+import { useRouter } from "next/navigation";
 
 import type { ChatRoomType } from "../types";
 import { ChatLog } from "./ChatLog";
@@ -21,6 +22,7 @@ const ChatRoomFetcher = async (
 };
 
 export const ChatRoom = () => {
+	const router = useRouter();
 	const { chatRoomId } = useParams<{ chatRoomId: string }>();
 
 	const { data: chatRoom, error: chatRoomError } = useSWR(
@@ -30,13 +32,31 @@ export const ChatRoom = () => {
 
 	const isLoading = !chatRoom && !chatRoomError;
 
+	const handleDelete = async (chatRoomId: string) => {
+		const res = await fetch(`/api/chatroom/${chatRoomId}`, {
+			method: "DELETE",
+		});
+		if (!res.ok) {
+			alert("Failed to delete chat room");
+			return;
+		}
+		router.push("/");
+	};
 	if (isLoading) return <div>Loading...</div>;
 	if (chatRoomError) return <div>Error loading chat room</div>;
 	if (!chatRoom) return <div>No chat room found</div>;
 
 	return (
 		<div className="p-4 w-full">
-			<h1 className="text-2xl font-bold mb-2">Chatroom</h1>
+			<div className="flex justify-between items-center p-2 mb-2">
+				<h1 className="text-2xl font-bold mb-2">Chatroom</h1>
+				<button 
+					className="bg-red-500 text-white p-2 rounded-md w-[7rem]"
+					onClick={() => handleDelete(chatRoomId)}
+				>
+					Delete
+				</button>
+			</div>
 			{chatRoom.chatDatas.length > 0 && (
 				<div className="w-full flex flex-col items-center mb-3">
 					<h2 className="text-xl font-bold mb-2 self-start">Chat Log</h2>
