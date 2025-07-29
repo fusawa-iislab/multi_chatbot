@@ -1,7 +1,7 @@
 export type ChatRoomType = {
 	id: number;
-	persons: Person[];
-	chatDatas: ChatData[];
+	persons: PersonType[];
+	chatDatas: ChatDataType[];
 	title: string;
 };
 
@@ -12,7 +12,7 @@ export type PersonType = {
 	id: number;
 };
 
-export type ChatbotInput = Omit<PersonType, "isuser" | "id">;
+export type ChatbotInput = Omit<PersonType, "isUser" | "id">;
 
 export type ChatDataType = {
 	id: number;
