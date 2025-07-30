@@ -21,14 +21,14 @@ export const CreateChatRoom = () => {
 	const [personIndex, setPersonIndex] = useState<number>(0);
 
 	useEffect(() => {
-		setChatRoomInput({
-			title: chatRoomInput.title,
+		setChatRoomInput((prev) => ({
+			title: prev.title,
 			persons: Array.from({ length: personNum }, (_, index) => ({
-				name: chatRoomInput.persons[index]?.name || "",
-				persona: chatRoomInput.persons[index]?.persona || "",
+				name: prev.persons[index]?.name || "",
+				persona: prev.persons[index]?.persona || "",
 			})),
-		});
-	}, [personNum, chatRoomInput]);
+		}));
+	}, [personNum]);
 
 	const handleCreateChatRoom = async (chatRoomInput: ChatRoomInputType) => {
 		const res = await fetch("/api/chatroom/create", {
