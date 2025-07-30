@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
-import useSWR from "swr";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
 
 import type { ChatRoomType } from "../types";
 import { ChatLog } from "./ChatLog";
@@ -50,9 +50,10 @@ export const ChatRoom = () => {
 		<div className="p-4 w-full">
 			<div className="flex justify-between items-center p-2 mb-2">
 				<h1 className="text-2xl font-bold mb-2">Chatroom</h1>
-				<button 
+				<button
 					className="bg-red-500 text-white p-2 rounded-md w-[7rem]"
 					onClick={() => handleDelete(chatRoomId)}
+					type="button"
 				>
 					Delete
 				</button>
