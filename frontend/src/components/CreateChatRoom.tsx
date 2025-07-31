@@ -26,7 +26,8 @@ export const CreateChatRoom = () => {
 	});
 	const [chatbotIndex, setChatbotIndex] = useState<number>(0);
 	const [userIndex, setUserIndex] = useState<number>(0);
-	const [disableSubmitButton, setDisableSubmitButton] = useState<boolean>(false);
+	const [disableSubmitButton, setDisableSubmitButton] =
+		useState<boolean>(false);
 	const [userView, setUserView] = useState<boolean>(false);
 
 	useEffect(() => {
@@ -56,11 +57,11 @@ export const CreateChatRoom = () => {
 		}));
 
 		const persons = [...chatbots, ...users];
-		
+
 		const data = {
 			title: chatRoomInput.title,
 			persons: persons,
-		}
+		};
 		const res = await fetch("/api/chatroom/create", {
 			method: "POST",
 			body: JSON.stringify(data),
@@ -99,8 +100,11 @@ export const CreateChatRoom = () => {
 					<div className="flex gap-4 items-center">
 						<button
 							// Toggle to persons information view
-							className={!userView ? "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition" :
-								"px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"}
+							className={
+								!userView
+									? "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+									: "px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+							}
 							onClick={() => setUserView(false)}
 							type="button"
 						>
@@ -121,8 +125,11 @@ export const CreateChatRoom = () => {
 					<div className="flex gap-4 items-center">
 						<button
 							// Toggle to persons information view
-							className={userView ? "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition" :
-								"px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"}
+							className={
+								userView
+									? "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+									: "px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+							}
 							onClick={() => setUserView(true)}
 							type="button"
 						>
@@ -257,14 +264,14 @@ export const CreateChatRoom = () => {
 					onClick={() => {
 						handleCreateChatRoom(chatRoomInput);
 					}}
-					disabled={(
-						chatbotNum === 0 && userNum === 0 ||
+					disabled={
+						(chatbotNum === 0 && userNum === 0) ||
 						chatRoomInput.title === "" ||
 						chatRoomInput.chatbots.some(
 							(chatbot) => chatbot.name === "" || chatbot.persona === "",
-						) || chatRoomInput.users.some(
-							(user) => user.name === "")
-						 ) || disableSubmitButton 
+						) ||
+						chatRoomInput.users.some((user) => user.name === "") ||
+						disableSubmitButton
 					}
 				>
 					Create
