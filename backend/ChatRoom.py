@@ -52,13 +52,21 @@ class ChatRoom:
         return
 
 
-def create_chatroom(title: str, persons_data: list) -> ChatRoom:
+def create_chatroom(title: str, persons_data: list, users_data: list) -> ChatRoom:
     chatroom = ChatRoom(title=title)
     for person_data in persons_data:
         chatroom.add_person(
             name=person_data["name"],
             persona=person_data["persona"],
             is_user=False,
+            chatroom_id=chatroom.id,
+        )
+
+    for user_data in users_data:
+        chatroom.add_person(
+            name=user_data["name"],
+            persona="",
+            is_user=True,
             chatroom_id=chatroom.id,
         )
     return chatroom

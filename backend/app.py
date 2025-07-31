@@ -34,7 +34,8 @@ async def create_new_chatroom(request: Request):
     print(f"Received data: {data}")
     title = data.get("title")
     persons = data.get("persons")
-    chatroom = create_chatroom(title=title, persons_data=persons)
+    users = data.get("users")
+    chatroom = create_chatroom(title=title, persons_data=persons, users_data=users)
     chatrooms_data.append(chatroom)
     return {"chatRoomId": chatroom.id}
 
