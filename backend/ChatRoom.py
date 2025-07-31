@@ -36,7 +36,7 @@ class ChatRoom:
     def add_person(
         self,
         name: str,
-        persona: str,
+        persona: str | None = None,
         is_user: bool = False,
         chatroom_id: int | None = None,
     ):
@@ -52,21 +52,14 @@ class ChatRoom:
         return
 
 
-def create_chatroom(title: str, persons_data: list, users_data: list) -> ChatRoom:
+def create_chatroom(title: str, persons_data: list) -> ChatRoom:
     chatroom = ChatRoom(title=title)
     for person_data in persons_data:
         chatroom.add_person(
-            name=person_data["name"],
-            persona=person_data["persona"],
-            is_user=False,
+            name=person_data.get("name"),
+            persona=person_data.get("persona", None),
+            is_user=person_data.get("is_user"),
             chatroom_id=chatroom.id,
         )
 
-    for user_data in users_data:
-        chatroom.add_person(
-            name=user_data["name"],
-            persona="",
-            is_user=True,
-            chatroom_id=chatroom.id,
-        )
     return chatroom

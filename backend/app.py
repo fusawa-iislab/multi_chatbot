@@ -34,8 +34,9 @@ async def create_new_chatroom(request: Request):
     print(f"Received data: {data}")
     title = data.get("title")
     persons = data.get("persons")
-    users = data.get("users")
-    chatroom = create_chatroom(title=title, persons_data=persons, users_data=users)
+    for person in persons:
+        person["is_user"] = person.pop("isUser")
+    chatroom = create_chatroom(title=title, persons_data=persons)
     chatrooms_data.append(chatroom)
     return {"chatRoomId": chatroom.id}
 
