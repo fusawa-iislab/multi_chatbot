@@ -19,6 +19,7 @@ export const CreateChatRoom = () => {
 		persons: [],
 	});
 	const [personIndex, setPersonIndex] = useState<number>(0);
+	const [buttonPassive, setButtonState] = useState<boolean>(false);
 
 	useEffect(() => {
 		setChatRoomInput((prev) => ({
@@ -42,6 +43,21 @@ export const CreateChatRoom = () => {
 			router.push(`/chatroom/${chatRoomId}`);
 		} else {
 			console.error("Failed to create chat room");
+			setButtonState(false);
+		}
+	};
+
+	//Catches runtime error if user has deleted a person after entering data.
+	const handleIndexError = (currentPersonIndex: number, dataType: string) => {
+		try {
+			if (dataType === "name") {
+				return chatRoomInput.persons[personIndex].name;
+			} else if (dataType === "persona") {
+				return chatRoomInput.persons[personIndex].persona;
+			}
+		} catch (RunTimeError) {
+			setPersonIndex(personIndex - 1);
+			return "";
 		}
 	};
 
@@ -86,7 +102,7 @@ export const CreateChatRoom = () => {
 									id={"name"}
 									className="p-2 border border-gray-300 rounded-md w-full max-w-2xl"
 									placeholder="Enter name"
-									value={chatRoomInput.persons[personIndex].name}
+									value={handleIndexError(personIndex, "name")}
 									onChange={(e) =>
 										setChatRoomInput({
 											...chatRoomInput,
@@ -101,7 +117,7 @@ export const CreateChatRoom = () => {
 									id={"persona"}
 									className="p-2 border border-gray-300 rounded-md w-full h-24 resize-none"
 									placeholder="Enter persona description"
-									value={chatRoomInput.persons[personIndex].persona}
+									value={handleIndexError(personIndex, "persona")}
 									onChange={(e) =>
 										setChatRoomInput({
 											...chatRoomInput,
@@ -141,12 +157,15 @@ export const CreateChatRoom = () => {
 				<button
 					className="bg-blue-500 text-white p-2 rounded-md w-[10rem] self-center disabled:opacity-50"
 					type="button"
-					onClick={() => handleCreateChatRoom(chatRoomInput)}
+					onClick={() => {
+						handleCreateChatRoom(chatRoomInput);
+						setButtonState(true);
+					}}
 					disabled={
 						chatRoomInput.title === "" ||
 						chatRoomInput.persons.some(
 							(person) => person.name === "" || person.persona === "",
-						)
+						) || buttonPassive // Disable button if already creating a chat room.
 					}
 				>
 					Create
