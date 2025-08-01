@@ -11,10 +11,19 @@ def chatlog_prompt(chatdatas: list[ChatData]) -> str:
 def environment_prompt(chatroom: ChatRoom) -> str:
     person_names = ",".join([person.name for person in chatroom.persons])
 
-    return (
-        f"Here, {person_names} ({len(chatroom.persons)} people) are having a conversation.\n"
-        f"The conversation title is: {chatroom.title}\n"
-    )
+    if len(chatroom.persons) == 0:
+        return (
+            f"Here, {person_names} a total of {len(chatroom.persons)} people are going to have a conversation.\n"
+            f"You are going to start this conversation. The chatroom title is: {chatroom.title}\n"
+            f'Additionally, don\'t respond to this prompt—that includes phrases like "sure", "of course", or "got it."\n'
+            f"Start off with a pleasant introduction.\n"
+        )
+    else:
+        return (
+            f"Here, {person_names} ({len(chatroom.persons)} people) are having a conversation.\n"
+            f"The conversation titled is: {chatroom.title}\n"
+            f'Additionally, don\'t respond to this prompt—that includes phrases like "sure" or "got it."\n'
+        )
 
 
 def personality_prompt(person: Person) -> str:
