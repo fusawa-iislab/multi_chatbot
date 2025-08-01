@@ -4,7 +4,7 @@ class Person:
     def __init__(
         self,
         name: str,
-        persona: str,
+        persona: str | None = None,
         chatroom_id: int | None = None,
         is_user: bool = False,
     ):
@@ -14,6 +14,8 @@ class Person:
         self.persona = persona
         self.chatroom_id = chatroom_id
         self.is_user = is_user
+        if persona is None and not is_user:
+            raise ValueError("Persona is required for chatbots")
 
     def __repr__(self):
         return f"Person(name={self.name}, persona={self.persona})"

@@ -5,35 +5,66 @@ import { useEffect, useState } from "react";
 
 type ChatRoomInputType = {
 	title: string;
-	persons: {
+	chatbots: {
 		name: string;
 		persona: string;
+	}[];
+	users: {
+		name: string;
+		// Could add more fields.
 	}[];
 };
 
 export const CreateChatRoom = () => {
 	const router = useRouter();
-	const [personNum, setPersonNum] = useState<number>(0);
+	const [chatbotNum, setChatbotNum] = useState<number>(0);
+	const [userNum, setUserNum] = useState<number>(0);
 	const [chatRoomInput, setChatRoomInput] = useState<ChatRoomInputType>({
 		title: "",
-		persons: [],
+		chatbots: [],
+		users: [],
 	});
-	const [personIndex, setPersonIndex] = useState<number>(0);
+	const [chatbotIndex, setChatbotIndex] = useState<number>(0);
+	const [userIndex, setUserIndex] = useState<number>(0);
+	const [disableSubmitButton, setDisableSubmitButton] =
+		useState<boolean>(false);
+	const [userView, setUserView] = useState<boolean>(false);
 
 	useEffect(() => {
 		setChatRoomInput((prev) => ({
 			title: prev.title,
-			persons: Array.from({ length: personNum }, (_, index) => ({
-				name: prev.persons[index]?.name || "",
-				persona: prev.persons[index]?.persona || "",
+			chatbots: Array.from({ length: chatbotNum }, (_, index) => ({
+				name: prev.chatbots[index]?.name || "",
+				persona: prev.chatbots[index]?.persona || "",
+			})),
+			users: Array.from({ length: userNum }, (_, index) => ({
+				name: prev.users[index]?.name || "",
 			})),
 		}));
-	}, [personNum]);
+	}, [chatbotNum, userNum]);
 
 	const handleCreateChatRoom = async (chatRoomInput: ChatRoomInputType) => {
+		setDisableSubmitButton(true);
+		const chatbots = chatRoomInput.chatbots.map((chatbot) => ({
+			name: chatbot.name,
+			persona: chatbot.persona,
+			isUser: false,
+		}));
+
+		const users = chatRoomInput.users.map((user) => ({
+			name: user.name,
+			isUser: true,
+		}));
+
+		const persons = [...chatbots, ...users];
+
+		const data = {
+			title: chatRoomInput.title,
+			persons: persons,
+		};
 		const res = await fetch("/api/chatroom/create", {
 			method: "POST",
-			body: JSON.stringify(chatRoomInput),
+			body: JSON.stringify(data),
 		});
 		if (res.ok) {
 			const data = await res.json();
@@ -42,6 +73,8 @@ export const CreateChatRoom = () => {
 			router.push(`/chatroom/${chatRoomId}`);
 		} else {
 			console.error("Failed to create chat room");
+			alert("Failed to create chat room");
+			setDisableSubmitButton(false);
 		}
 	};
 
@@ -63,21 +96,60 @@ export const CreateChatRoom = () => {
 						}
 					/>
 				</div>
-				<div className="flex flex-col gap-2">
+				<div className="flex gap-4">
 					<div className="flex gap-4 items-center">
-						<label htmlFor="persons">Persons:</label>
+						<button
+							// Toggle to persons information view
+							className={
+								!userView
+									? "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+									: "px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+							}
+							onClick={() => setUserView(false)}
+							type="button"
+						>
+							Persons:
+						</button>
 						<input
 							type="number"
 							id="persons"
 							className="p-2 border border-gray-300 rounded-md w-[5rem]"
-							value={personNum}
-							onChange={(e) => setPersonNum(Number(e.target.value))}
-							min={1}
+							value={chatbotNum}
+							onChange={(e) => setChatbotNum(Number(e.target.value))}
+							min={0}
 							max={10}
 							required
 						/>
 					</div>
-					{chatRoomInput.persons.length > 0 && (
+					{/* User mode button */}
+					<div className="flex gap-4 items-center">
+						<button
+							// Toggle to persons information view
+							className={
+								userView
+									? "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+									: "px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+							}
+							onClick={() => setUserView(true)}
+							type="button"
+						>
+							Users:
+						</button>
+						<input
+							type="number"
+							id="users"
+							className="p-2 border border-gray-300 rounded-md w-[5rem]"
+							value={userNum}
+							onChange={(e) => setUserNum(Number(e.target.value))}
+							min={0}
+							max={10}
+						/>
+					</div>
+				</div>
+
+				{/* Options for AI "persons" */}
+				<div>
+					{chatRoomInput.chatbots.length > 0 && !userView && (
 						<div className="flex flex-col gap-2">
 							<div className="flex flex-col gap-2">
 								<label htmlFor={"name"}>Name:</label>
@@ -86,12 +158,12 @@ export const CreateChatRoom = () => {
 									id={"name"}
 									className="p-2 border border-gray-300 rounded-md w-full max-w-2xl"
 									placeholder="Enter name"
-									value={chatRoomInput.persons[personIndex].name}
+									value={chatRoomInput.chatbots[chatbotIndex].name}
 									onChange={(e) =>
 										setChatRoomInput({
 											...chatRoomInput,
-											persons: chatRoomInput.persons.map((p, i) =>
-												i === personIndex ? { ...p, name: e.target.value } : p,
+											chatbots: chatRoomInput.chatbots.map((p, i) =>
+												i === chatbotIndex ? { ...p, name: e.target.value } : p,
 											),
 										})
 									}
@@ -101,12 +173,12 @@ export const CreateChatRoom = () => {
 									id={"persona"}
 									className="p-2 border border-gray-300 rounded-md w-full h-24 resize-none"
 									placeholder="Enter persona description"
-									value={chatRoomInput.persons[personIndex].persona}
+									value={chatRoomInput.chatbots[chatbotIndex].persona}
 									onChange={(e) =>
 										setChatRoomInput({
 											...chatRoomInput,
-											persons: chatRoomInput.persons.map((p, i) =>
-												i === personIndex
+											chatbots: chatRoomInput.chatbots.map((p, i) =>
+												i === chatbotIndex
 													? { ...p, persona: e.target.value }
 													: p,
 											),
@@ -117,19 +189,19 @@ export const CreateChatRoom = () => {
 							<div className="flex gap-2 self-center items-center">
 								<button
 									type="button"
-									onClick={() => setPersonIndex(personIndex - 1)}
-									disabled={personIndex === 0}
+									onClick={() => setChatbotIndex(chatbotIndex - 1)}
+									disabled={chatbotIndex === 0}
 									className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
 								>
 									<CaretLeft size={24} />
 								</button>
 								<span className="text-sm">
-									{personIndex + 1} / {chatRoomInput.persons.length}
+									{chatbotIndex + 1} / {chatRoomInput.chatbots.length}
 								</span>
 								<button
 									type="button"
-									onClick={() => setPersonIndex(personIndex + 1)}
-									disabled={personIndex === chatRoomInput.persons.length - 1}
+									onClick={() => setChatbotIndex(chatbotIndex + 1)}
+									disabled={chatbotIndex === chatRoomInput.chatbots.length - 1}
 									className="p-2 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
 								>
 									<CaretRight size={24} />
@@ -138,15 +210,68 @@ export const CreateChatRoom = () => {
 						</div>
 					)}
 				</div>
+
+				{/* Options for user */}
+				<div>
+					{chatRoomInput.users.length > 0 && userView && (
+						<div className="flex flex-col gap-2">
+							<div className="flex flex-col gap-2">
+								<label htmlFor={"name"}>Name:</label>
+								<input
+									type="text"
+									id={"name"}
+									className="p-2 border border-gray-300 rounded-md w-full max-w-2xl"
+									placeholder="Enter name"
+									value={chatRoomInput.users[userIndex].name}
+									onChange={(e) =>
+										setChatRoomInput({
+											...chatRoomInput,
+											users: chatRoomInput.users.map((p, i) =>
+												i === userIndex ? { ...p, name: e.target.value } : p,
+											),
+										})
+									}
+								/>
+							</div>
+							<div className="flex gap-2 self-center items-center">
+								<button
+									type="button"
+									onClick={() => setUserIndex(userIndex - 1)}
+									disabled={userIndex === 0}
+									className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+								>
+									<CaretLeft size={24} />
+								</button>
+								<span className="text-sm">
+									{userIndex + 1} / {chatRoomInput.users.length}
+								</span>
+								<button
+									type="button"
+									onClick={() => setUserIndex(userIndex + 1)}
+									disabled={userIndex === chatRoomInput.users.length - 1}
+									className="p-2 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+								>
+									<CaretRight size={24} />
+								</button>
+							</div>
+						</div>
+					)}
+				</div>
+
 				<button
 					className="bg-blue-500 text-white p-2 rounded-md w-[10rem] self-center disabled:opacity-50"
 					type="button"
-					onClick={() => handleCreateChatRoom(chatRoomInput)}
+					onClick={() => {
+						handleCreateChatRoom(chatRoomInput);
+					}}
 					disabled={
+						(chatbotNum === 0 && userNum === 0) ||
 						chatRoomInput.title === "" ||
-						chatRoomInput.persons.some(
-							(person) => person.name === "" || person.persona === "",
-						)
+						chatRoomInput.chatbots.some(
+							(chatbot) => chatbot.name === "" || chatbot.persona === "",
+						) ||
+						chatRoomInput.users.some((user) => user.name === "") ||
+						disableSubmitButton
 					}
 				>
 					Create
