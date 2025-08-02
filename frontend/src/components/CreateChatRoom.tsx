@@ -15,6 +15,20 @@ type ChatRoomInputType = {
 	}[];
 };
 
+const handlePersonNumberChange = (
+	num: number,
+	setNum: (num: number) => void,
+	index: number,
+	setIndex: (index: number) => void,
+) => {
+	setNum(num);
+	if (num === 0) {
+		setIndex(0);
+	} else if (index >= num) {
+		setIndex(num - 1);
+	}
+};
+
 export const CreateChatRoom = () => {
 	const router = useRouter();
 	const [chatbotNum, setChatbotNum] = useState<number>(0);
@@ -115,7 +129,14 @@ export const CreateChatRoom = () => {
 							id="persons"
 							className="p-2 border border-gray-300 rounded-md w-[5rem]"
 							value={chatbotNum}
-							onChange={(e) => setChatbotNum(Number(e.target.value))}
+							onChange={(e) => {
+								handlePersonNumberChange(
+									Number(e.target.value),
+									setChatbotNum,
+									chatbotIndex,
+									setChatbotIndex,
+								);
+							}}
 							min={0}
 							max={10}
 							required
@@ -140,7 +161,14 @@ export const CreateChatRoom = () => {
 							id="users"
 							className="p-2 border border-gray-300 rounded-md w-[5rem]"
 							value={userNum}
-							onChange={(e) => setUserNum(Number(e.target.value))}
+							onChange={(e) => {
+								handlePersonNumberChange(
+									Number(e.target.value),
+									setUserNum,
+									userIndex,
+									setUserIndex,
+								);
+							}}
 							min={0}
 							max={10}
 						/>
@@ -158,7 +186,7 @@ export const CreateChatRoom = () => {
 									id={"name"}
 									className="p-2 border border-gray-300 rounded-md w-full max-w-2xl"
 									placeholder="Enter name"
-									value={chatRoomInput.chatbots[chatbotIndex].name}
+									value={chatRoomInput.chatbots[chatbotIndex]?.name || ""}
 									onChange={(e) =>
 										setChatRoomInput({
 											...chatRoomInput,
@@ -173,7 +201,7 @@ export const CreateChatRoom = () => {
 									id={"persona"}
 									className="p-2 border border-gray-300 rounded-md w-full h-24 resize-none"
 									placeholder="Enter persona description"
-									value={chatRoomInput.chatbots[chatbotIndex].persona}
+									value={chatRoomInput.chatbots[chatbotIndex]?.persona || ""}
 									onChange={(e) =>
 										setChatRoomInput({
 											...chatRoomInput,
@@ -222,7 +250,7 @@ export const CreateChatRoom = () => {
 									id={"name"}
 									className="p-2 border border-gray-300 rounded-md w-full max-w-2xl"
 									placeholder="Enter name"
-									value={chatRoomInput.users[userIndex].name}
+									value={chatRoomInput.users[userIndex]?.name || ""}
 									onChange={(e) =>
 										setChatRoomInput({
 											...chatRoomInput,
