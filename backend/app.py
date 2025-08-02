@@ -104,6 +104,15 @@ async def user_input(chatroom_id: int, request: Request):
     return {"message": "Message sent successfully"}
 
 
+@app.post("/api/chatroom/{chatroom_id}/reset-chatlog")
+async def reset_chatlog(chatroom_id: int):
+    chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
+    if not chatroom:
+        return {"error": "Chat room not found"}, 404
+    chatroom.chatdatas = []
+    return {"message": "Chat log reset successfully"}
+
+
 @app.get("/")
 async def read_root():
     return {"message": "Welcome to the FastAPI application!"}
