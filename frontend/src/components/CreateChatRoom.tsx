@@ -15,6 +15,18 @@ type ChatRoomInputType = {
 	}[];
 };
 
+const handlePersonNumberChange = (
+	num: number,
+	setNum: (num: number) => void,
+	index: number,
+	setIndex: (index: number) => void,
+) => {
+	setNum(num);
+	if (index >= num) {
+		setIndex(num - 1);
+	}
+};
+
 export const CreateChatRoom = () => {
 	const router = useRouter();
 	const [chatbotNum, setChatbotNum] = useState<number>(0);
@@ -115,7 +127,9 @@ export const CreateChatRoom = () => {
 							id="persons"
 							className="p-2 border border-gray-300 rounded-md w-[5rem]"
 							value={chatbotNum}
-							onChange={(e) => setChatbotNum(Number(e.target.value))}
+							onChange={(e) => {
+								handlePersonNumberChange(Number(e.target.value), setChatbotNum, chatbotIndex, setChatbotIndex);
+							}}
 							min={0}
 							max={10}
 							required
@@ -140,7 +154,9 @@ export const CreateChatRoom = () => {
 							id="users"
 							className="p-2 border border-gray-300 rounded-md w-[5rem]"
 							value={userNum}
-							onChange={(e) => setUserNum(Number(e.target.value))}
+							onChange={(e) => {
+								handlePersonNumberChange(Number(e.target.value), setUserNum, userIndex, setUserIndex);
+							}}
 							min={0}
 							max={10}
 						/>
