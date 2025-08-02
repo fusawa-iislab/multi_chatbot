@@ -12,8 +12,6 @@ export type PersonType = {
 	id: number;
 };
 
-export type ChatbotInput = Omit<PersonType, "isUser" | "id">;
-
 export type ChatDataType = {
 	id: number;
 	name: string;
