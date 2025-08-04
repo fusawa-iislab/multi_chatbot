@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import useSWR from "swr";
 
@@ -70,13 +71,12 @@ export const ChatRoom = () => {
 	return (
 		<div className="p-2 w-full">
 			<div className="flex justify-between items-center px-2">
-				<button
-					className="bg-transparent text-blue-500 p-2 rounded-md flex items-center gap-1 hover:bg-blue-500 hover:text-white transition-colors"
-					onClick={() => router.push("/chatrooms")}
-					type="button"
+				<Link
+					href="/chatrooms"
+					className="flex items-center gap-1 text-blue-500"
 				>
 					<ArrowLeft size={24} /> Back
-				</button>
+				</Link>
 
 				<button
 					className="bg-red-500 text-white p-2 rounded-md w-[5rem] hover:bg-red-600 transition-colors"
@@ -87,6 +87,9 @@ export const ChatRoom = () => {
 				</button>
 			</div>
 			<h1 className="text-2xl font-bold mb-4">Chatroom</h1>
+			<Link href={`/chatroom/${chatRoomId}/order`} className="text-blue-500">
+				order(テスト中)
+			</Link>
 			{chatRoom.chatDatas.length > 0 && (
 				<div className="w-full flex flex-col items-center mb-3">
 					<div className="flex items-center gap-4 self-start mb-2">
