@@ -59,6 +59,8 @@ export const ChatRoom = () => {
 			return;
 		}
 		router.refresh();
+		// チャットリセットの際ページに反映されない場合もあるため、リロードで強制的更新を行う
+		window.location.reload();
 	};
 
 	if (isLoading) return <div>Loading...</div>;

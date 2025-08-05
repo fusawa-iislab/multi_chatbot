@@ -13,15 +13,17 @@ def environment_prompt(chatroom: ChatRoom) -> str:
 
     if len(chatroom.persons) == 0:
         return (
+            f"Previous forget all previous conversations, excluding your assigned personality.\n"
             f"Here, {person_names} a total of {len(chatroom.persons)} people are going to have a conversation.\n"
-            f"You are going to start this conversation. The chatroom title is: {chatroom.title}\n"
+            f"You are going to start this conversation. The conversation title is: {chatroom.title}\n"
             f'Additionally, don\'t respond to this prompt—that includes phrases like "sure", "of course", or "got it."\n'
-            f"Start off with a pleasant introduction.\n"
+            f"MOST IMPORTANTLY: Start off with a pleasant introduction, and address everyone.\n"
+            f"If you don't know what to talk about, bring up a lighthearted topic.\n"
         )
     else:
         return (
-            f"Here, {person_names} ({len(chatroom.persons)} people) are having a conversation.\n"
-            f"The conversation titled is: {chatroom.title}\n"
+            f"Here,  {person_names} ({len(chatroom.persons)} people) are having a conversation.\n"
+            f"The conversation title is: {chatroom.title}\n"
             f'Additionally, don\'t respond to this prompt—that includes phrases like "sure" or "got it."\n'
         )
 

@@ -3,6 +3,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import { mutate } from "swr";
 import type { PersonType } from "../types";
+import { Wrench } from "phosphor-react";
 
 export const PersonsInfoListItem: React.FC<{
 	person: PersonType;
@@ -55,8 +56,13 @@ export const PersonsInfoListItem: React.FC<{
 
 	return (
 		<div className="flex flex-col bg-white shadow rounded-xl p-4 border border-gray-200">
-			<h2 className="text-lg font-semibold text-gray-700 mb-1">
+			<h2 className="text-lg font-semibold text-gray-700 mb-1 flex items-center justify-between">
 				{person.name}
+				<a href={`/api/chatroom/${chatRoomId}/edit/${person.id}`}>
+					<button type="button">
+						<Wrench size={35} />
+					</button>
+				</a>
 			</h2>
 			<p className="flex-grow-1 text-gray-700 mb-2">{person.persona}</p>
 			<div className="text-right">
