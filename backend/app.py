@@ -61,6 +61,29 @@ async def delete_chatroom(chatroom_id: int):
     return {"message": "チャットルームが正常に削除されました"}
 
 
+@app.post("/api/chatroom/{chatroom_id}")
+async def edit_person(request: Request):
+    data = await request.json()
+    print(f"Received data: {data}")
+    person_id = data.get("personId")
+    chatroom_id = data.get("chatRoomId")
+    new_name = data.get("name")
+    chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
+    if not chatroom:
+        return {"error": "Chat room not found"}, 404
+    person = next(
+        (person for person in chatroom.persons if person.id == person_id), None
+    )
+    if not person:
+        return {"error": "Person not found"}, 404
+    person.name = new_name
+    return {
+        "message": "Person name updated successfully",
+        "personId": person_id,
+        "newName": new_name,
+    }
+
+
 @app.post("/api/chatroom/{chatroom_id}/chat-reply")
 async def chat_reply(chatroom_id: int, request: Request):
     data = await request.json()

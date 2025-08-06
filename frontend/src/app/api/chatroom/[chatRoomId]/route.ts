@@ -38,3 +38,28 @@ export async function DELETE(
 	}
 	return NextResponse.json({ message: "Chat room deleted successfully" });
 }
+
+export async function POST(
+	req: NextRequest,
+	{ params }: { params: Promise<{ name: string, chatRoomId: number, personId: number }> },
+) {
+	const { name } = await params;
+	const { chatRoomId } = await params;
+	const { personId } = await params;
+	const body = await req.json();
+	const res = await fetch(
+		`${process.env.BACKEND_API_URL}/api/chatroom/${chatRoomId}`,
+		{
+			method: "POST",
+			body: JSON.stringify(body),
+		},
+	);
+	if (res.ok) {
+		const data = await res.json();
+		return NextResponse.json({ name: name, chatroomId: chatRoomId, personId: personId });
+	}
+	return NextResponse.json(
+		{ message: "Failed to send person data" },
+		{ status: 500 },
+	);
+}

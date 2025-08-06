@@ -11,6 +11,8 @@ export const PersonsInfoListItem: React.FC<{
 }> = ({ person, chatRoomId }) => {
 	const [textareaIsOpen, setTextareaIsOpen] = useState(false);
 	const [userMessage, setUserMessage] = useState<string>("");
+	const [editMode, setEditMode] = useState(false);
+	const [savedName, setSavedName] = useState<string>(person.name);
 
 	const ChatBotReply = async (personId: number) => {
 		await fetch(`/api/chatroom/${chatRoomId}/chat-reply`, {
@@ -54,18 +56,62 @@ export const PersonsInfoListItem: React.FC<{
 		mutate(`/api/chatroom/${chatRoomId}`);
 	};
 
+	const personEditHandler = async () => {
+		if (!editMode) {
+			setEditMode(true);
+		} else {
+			setEditMode(false);
+			setSavedName("");
+		}
+	};
+
+	const setPersonName = async (newName: string, personId: number) => {
+		if (newName !== person.name && newName !== "") {
+			const res = await fetch(`/api/chatroom/${chatRoomId}`, {
+				method: "POST",
+				body: JSON.stringify({ name: newName, chatRoomId: chatRoomId, personId: personId }),
+			});
+			if (!res.ok) {
+				alert("Failed to update person name");
+				return;
+			} else {
+				console.log("Person name updated successfully");
+				mutate(`/api/chatroom/${chatRoomId}`);
+			}
+		}
+	};
+
 	return (
-		<div className="flex flex-col bg-white shadow rounded-xl p-4 border border-gray-200">
+		<div className={
+			editMode ?
+				"flex flex-col bg-blue-100 shadow rounded-xl p-4 border border-black" :
+				"flex flex-col bg-white shadow rounded-xl p-4 border border-gray-200"
+		}
+		>
 			<h2 className="text-lg font-semibold text-gray-700 mb-1 flex items-center justify-between">
-				{person.name}
-				<a href={`/api/chatroom/${chatRoomId}/edit/${person.id}`}>
-					<button type="button">
-						<Wrench size={35} />
-					</button>
-				</a>
+				{!editMode ?
+					person.name :
+					<textarea
+						className="resize-none"
+						onChange={(e) => setSavedName(e.target.value)}
+						rows={1}
+						placeholder="Name"
+					>
+					</textarea>
+				}
+				<button
+					onClick={() => {
+						personEditHandler();
+						setTextareaIsOpen(false);
+					}}
+					type="button"
+				>
+					<Wrench size={35} />
+				</button>
 			</h2>
 			<p className="flex-grow-1 text-gray-700 mb-2">{person.persona}</p>
-			<div className="text-right">
+
+			{!editMode && (<div className="text-right">
 				{person.isUser ? (
 					<button
 						className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
@@ -85,7 +131,43 @@ export const PersonsInfoListItem: React.FC<{
 						Reply
 					</button>
 				)}
-			</div>
+			</div>)}
+
+			{editMode && (<div className="text-right">
+				{person.isUser ? (
+					<button
+						className={(savedName !== "" && savedName !== person.name) ?
+							"px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition" :
+							"px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+						}
+						onClick={async () => {
+							await setPersonName(savedName, person.id)
+							setEditMode(false)
+						}}
+						type="button"
+						disabled={(savedName === "" || savedName === person.name)}
+					>
+						Confirm
+					</button>
+				) : (
+					<button
+						className={(savedName !== "" && savedName !== person.name) ?
+							"px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition" :
+							"px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+						}
+						onClick={async () => {
+							await setPersonName(savedName, person.id)
+							setEditMode(false)
+
+						}}
+						type="button"
+						disabled={(savedName === "" || savedName === person.name)}
+					>
+						Confirm
+					</button>
+				)}
+			</div>)}
+
 			{textareaIsOpen && person.isUser && (
 				<div className="fixed bottom-0 left-0 right-0 w-screen flex flex-col items-center bg-gray-800 p-2">
 					<button
