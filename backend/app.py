@@ -68,6 +68,7 @@ async def edit_person(request: Request):
     person_id = data.get("personId")
     chatroom_id = data.get("chatRoomId")
     new_name = data.get("name")
+    new_persona = data.get("persona")
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if not chatroom:
         return {"error": "Chat room not found"}, 404
@@ -77,10 +78,12 @@ async def edit_person(request: Request):
     if not person:
         return {"error": "Person not found"}, 404
     person.name = new_name
+    person.persona = new_persona
     return {
         "message": "Person name updated successfully",
         "personId": person_id,
         "newName": new_name,
+        "newPersona": new_persona,
     }
 
 

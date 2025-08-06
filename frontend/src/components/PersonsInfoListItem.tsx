@@ -13,6 +13,7 @@ export const PersonsInfoListItem: React.FC<{
 	const [userMessage, setUserMessage] = useState<string>("");
 	const [editMode, setEditMode] = useState(false);
 	const [savedName, setSavedName] = useState<string>(person.name);
+	const [savedPersona, setSavedPersona] = useState<string>(person.persona);
 
 	const ChatBotReply = async (personId: number) => {
 		await fetch(`/api/chatroom/${chatRoomId}/chat-reply`, {
@@ -62,20 +63,27 @@ export const PersonsInfoListItem: React.FC<{
 		} else {
 			setEditMode(false);
 			setSavedName("");
+			setSavedPersona("");
 		}
 	};
 
-	const setPersonName = async (newName: string, personId: number) => {
-		if (newName !== person.name && newName !== "") {
+	const setPersonInfo = async (newName: string, newPersona: string, personId: number) => {
+		if (newName === "") {
+			newName === person.name;
+		}
+		if (newPersona === "") {
+			newPersona === person.persona;
+		}
+		if (newName !== person.name || newPersona != person.persona) {
 			const res = await fetch(`/api/chatroom/${chatRoomId}`, {
 				method: "POST",
-				body: JSON.stringify({ name: newName, chatRoomId: chatRoomId, personId: personId }),
+				body: JSON.stringify({ name: newName, persona: newPersona, chatRoomId: chatRoomId, personId: personId }),
 			});
 			if (!res.ok) {
-				alert("Failed to update person name");
+				alert("Failed to update person info");
 				return;
 			} else {
-				console.log("Person name updated successfully");
+				console.log("Person info updated successfully");
 				mutate(`/api/chatroom/${chatRoomId}`);
 			}
 		}
@@ -95,7 +103,7 @@ export const PersonsInfoListItem: React.FC<{
 						className="resize-none"
 						onChange={(e) => setSavedName(e.target.value)}
 						rows={1}
-						placeholder="Name"
+						placeholder={person.name}
 					>
 					</textarea>
 				}
@@ -109,8 +117,27 @@ export const PersonsInfoListItem: React.FC<{
 					<Wrench size={35} />
 				</button>
 			</h2>
-			<p className="flex-grow-1 text-gray-700 mb-2">{person.persona}</p>
-
+			<p className="flex-grow-1 text-gray-700 mb-2">
+				{editMode ? (
+					<textarea
+						className="resize-none"
+						defaultValue={person.persona}
+						maxLength={500}
+						cols={37}
+						onChange={(e) => setSavedPersona(e.target.value)}
+					>
+					</textarea>
+				) :
+					<textarea
+						className="resize-none"
+						value={person.persona}
+						cols={37}
+						readOnly
+						disabled
+					>
+					</textarea>
+				}
+			</p>
 			{!editMode && (<div className="text-right">
 				{person.isUser ? (
 					<button
@@ -135,13 +162,14 @@ export const PersonsInfoListItem: React.FC<{
 
 			{editMode && (<div className="text-right">
 				{person.isUser ? (
+					/* User confirm requirements */
 					<button
 						className={(savedName !== "" && savedName !== person.name) ?
 							"px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition" :
 							"px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
 						}
 						onClick={async () => {
-							await setPersonName(savedName, person.id)
+							await setPersonInfo(savedName, savedPersona, person.id)
 							setEditMode(false)
 						}}
 						type="button"
@@ -150,18 +178,21 @@ export const PersonsInfoListItem: React.FC<{
 						Confirm
 					</button>
 				) : (
+					/* Chatbot confirm requirements */
 					<button
-						className={(savedName !== "" && savedName !== person.name) ?
+						className={(savedName !== "" && savedName !== person.name) ||
+							(savedPersona !== "" && savedPersona !== person.persona) ?
 							"px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition" :
 							"px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
 						}
 						onClick={async () => {
-							await setPersonName(savedName, person.id)
+							await setPersonInfo(savedName, savedPersona, person.id)
 							setEditMode(false)
 
 						}}
 						type="button"
-						disabled={(savedName === "" || savedName === person.name)}
+						disabled={(savedName === "" || savedName === person.name) &&
+							(savedPersona === "" || savedPersona === person.persona)}
 					>
 						Confirm
 					</button>
