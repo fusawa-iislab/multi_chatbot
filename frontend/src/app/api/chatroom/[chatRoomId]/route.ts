@@ -41,7 +41,16 @@ export async function DELETE(
 
 export async function POST(
 	req: NextRequest,
-	{ params }: { params: Promise<{ name: string, persona: string, chatRoomId: number, personId: number }> },
+	{
+		params,
+	}: {
+		params: Promise<{
+			name: string;
+			persona: string;
+			chatRoomId: number;
+			personId: number;
+		}>;
+	},
 ) {
 	const { name } = await params;
 	const { persona } = await params;
@@ -49,7 +58,7 @@ export async function POST(
 	const { personId } = await params;
 	const body = await req.json();
 	const res = await fetch(
-		`${process.env.BACKEND_API_URL}/api/chatroom/${chatRoomId}`,
+		`${process.env.BACKEND_API_URL}/api/chatroom/${chatRoomId}/edit-person`,
 		{
 			method: "POST",
 			body: JSON.stringify(body),
@@ -57,7 +66,12 @@ export async function POST(
 	);
 	if (res.ok) {
 		const data = await res.json();
-		return NextResponse.json({ name: name, persona: persona, chatroomId: chatRoomId, personId: personId });
+		return NextResponse.json({
+			name: name,
+			persona: persona,
+			chatroomId: chatRoomId,
+			personId: personId,
+		});
 	}
 	return NextResponse.json(
 		{ message: "Failed to send person data" },

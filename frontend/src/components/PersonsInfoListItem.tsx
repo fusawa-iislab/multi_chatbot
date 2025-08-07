@@ -1,9 +1,9 @@
 "use client";
 import CloseIcon from "@mui/icons-material/Close";
+import { Wrench } from "phosphor-react";
 import { useState } from "react";
 import { mutate } from "swr";
 import type { PersonType } from "../types";
-import { Wrench } from "phosphor-react";
 
 export const PersonsInfoListItem: React.FC<{
 	person: PersonType;
@@ -67,137 +67,168 @@ export const PersonsInfoListItem: React.FC<{
 		}
 	};
 
-	const setPersonInfo = async (newName: string, newPersona: string, personId: number) => {
+	const setPersonInfo = async (
+		newName: string,
+		newPersona: string,
+		personId: number,
+	) => {
 		if (newName === "") {
 			newName === person.name;
 		}
 		if (newPersona === "") {
 			newPersona === person.persona;
 		}
-		if (newName !== person.name || newPersona != person.persona) {
+		if (newName !== person.name || newPersona !== person.persona) {
 			const res = await fetch(`/api/chatroom/${chatRoomId}`, {
 				method: "POST",
-				body: JSON.stringify({ name: newName, persona: newPersona, chatRoomId: chatRoomId, personId: personId }),
+				body: JSON.stringify({
+					name: newName,
+					persona: newPersona,
+					chatRoomId: chatRoomId,
+					personId: personId,
+				}),
 			});
 			if (!res.ok) {
 				alert("Failed to update person info");
 				return;
-			} else {
-				console.log("Person info updated successfully");
-				mutate(`/api/chatroom/${chatRoomId}`);
 			}
+			console.log("Person info updated successfully");
+			mutate(`/api/chatroom/${chatRoomId}`);
 		}
 	};
 
 	return (
-		<div className={
-			editMode ?
-				"flex flex-col bg-blue-100 shadow rounded-xl p-4 border border-black" :
-				"flex flex-col bg-white shadow rounded-xl p-4 border border-gray-200"
-		}
+		<div
+			className={
+				editMode
+					? "flex flex-col bg-blue-100 shadow rounded-xl p-4 border border-black"
+					: "flex flex-col bg-white shadow rounded-xl p-4 border border-gray-200"
+			}
 		>
-			<h2 className="text-lg font-semibold text-gray-700 mb-1 flex items-center justify-between">
-				{!editMode ?
-					person.name :
+			<h2 className="text-lg font-semibold text-gray-700 mb-1 flex items-center justify-between"
+				style={{ minHeight: "35px" }}>
+				{!editMode ? (
+					person.name
+				) : (
 					<textarea
 						className="resize-none"
 						onChange={(e) => setSavedName(e.target.value)}
 						rows={1}
 						placeholder={person.name}
+					></textarea>
+				)}
+				{!editMode && (
+					<button
+						onClick={() => {
+							personEditHandler();
+							setTextareaIsOpen(false);
+						}}
+						type="button"
 					>
-					</textarea>
-				}
-				<button
-					onClick={() => {
-						personEditHandler();
-						setTextareaIsOpen(false);
-					}}
-					type="button"
-				>
-					<Wrench size={35} />
-				</button>
+						<Wrench size={35} />
+					</button>
+				)}
 			</h2>
+
 			<p className="flex-grow-1 text-gray-700 mb-2">
-				{editMode ? (
+				{editMode && !person.isUser ? (
 					<textarea
 						className="resize-none"
 						defaultValue={person.persona}
 						maxLength={500}
 						cols={37}
 						onChange={(e) => setSavedPersona(e.target.value)}
-					>
-					</textarea>
-				) :
+					></textarea>
+				) : (
 					<textarea
 						className="resize-none"
 						value={person.persona}
 						cols={37}
 						readOnly
 						disabled
-					>
-					</textarea>
-				}
+					></textarea>
+				)}
 			</p>
-			{!editMode && (<div className="text-right">
-				{person.isUser ? (
-					<button
-						className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-						onClick={() => {
-							setTextareaIsOpen(!textareaIsOpen);
-						}}
-						type="button"
-					>
-						{textareaIsOpen ? "Cancel" : "Send Message"}
-					</button>
-				) : (
-					<button
-						className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
-						onClick={async () => await ChatBotReply(person.id)}
-						type="button"
-					>
-						Reply
-					</button>
-				)}
-			</div>)}
 
-			{editMode && (<div className="text-right">
-				{person.isUser ? (
-					/* User confirm requirements */
-					<button
-						className={(savedName !== "" && savedName !== person.name) ?
-							"px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition" :
-							"px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
-						}
-						onClick={async () => {
-							await setPersonInfo(savedName, savedPersona, person.id)
-							setEditMode(false)
-						}}
-						type="button"
-						disabled={(savedName === "" || savedName === person.name)}
-					>
-						Confirm
-					</button>
-				) : (
-					/* Chatbot confirm requirements */
-					<button
-						className={(savedName !== "" && savedName !== person.name) ||
-							(savedPersona !== "" && savedPersona !== person.persona) ?
-							"px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition" :
-							"px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
-						}
-						onClick={async () => {
-							await setPersonInfo(savedName, savedPersona, person.id)
-							setEditMode(false)
+			{!editMode && (
+				<div className="text-right">
+					{person.isUser ? (
+						<button
+							className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+							onClick={() => {
+								setTextareaIsOpen(!textareaIsOpen);
+							}}
+							type="button"
+						>
+							{textareaIsOpen ? "Cancel" : "Send Message"}
+						</button>
+					) : (
+						<button
+							className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+							onClick={async () => await ChatBotReply(person.id)}
+							type="button"
+						>
+							Reply
+						</button>
+					)}
+				</div>
+			)}
 
+			{editMode && (
+				<div className="text-right">
+					<button
+						className={"px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"}
+						onClick={async () => {
+							await setEditMode(false);
 						}}
-						type="button"
-						disabled={(savedName === "" || savedName === person.name) &&
-							(savedPersona === "" || savedPersona === person.persona)}
 					>
-						Confirm
+						Cancel
 					</button>
-				)}
-			</div>)}
+
+					{/* Spacing between "cancel" and "confirm" buttons */}
+					<a className="px-2"></a>
+
+					{person.isUser ? (
+						/* User confirm requirements */
+						<button
+							className={
+								savedName !== "" && savedName !== person.name
+									? "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+									: "px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+							}
+							onClick={async () => {
+								await setPersonInfo(savedName, savedPersona, person.id);
+								setEditMode(false);
+							}}
+							type="button"
+							disabled={savedName === "" || savedName === person.name}
+						>
+							Confirm
+						</button>
+					) : (
+						/* Chatbot confirm requirements */
+						<button
+							className={
+								(savedName !== "" && savedName !== person.name) ||
+									(savedPersona !== "" && savedPersona !== person.persona)
+									? "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+									: "px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+							}
+							onClick={async () => {
+								await setPersonInfo(savedName, savedPersona, person.id);
+								setEditMode(false);
+							}}
+							type="button"
+							disabled={
+								(savedName === "" || savedName === person.name) &&
+								(savedPersona === "" || savedPersona === person.persona)
+							}
+						>
+							Confirm
+						</button>
+					)}
+				</div>
+			)}
 
 			{textareaIsOpen && person.isUser && (
 				<div className="fixed bottom-0 left-0 right-0 w-screen flex flex-col items-center bg-gray-800 p-2">

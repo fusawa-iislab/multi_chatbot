@@ -61,7 +61,7 @@ async def delete_chatroom(chatroom_id: int):
     return {"message": "チャットルームが正常に削除されました"}
 
 
-@app.post("/api/chatroom/{chatroom_id}")
+@app.post("/api/chatroom/{chatroom_id}/edit-person")
 async def edit_person(request: Request):
     data = await request.json()
     print(f"Received data: {data}")
