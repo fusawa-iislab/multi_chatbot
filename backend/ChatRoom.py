@@ -1,4 +1,5 @@
 from ChatData import ChatData
+from ChatOrder import ChatOrder
 from Person import Person
 
 
@@ -6,13 +7,18 @@ class ChatRoom:
     id = 1
 
     def __init__(
-        self, title: str, persons: list | None = None, chatdatas: list | None = None
+        self,
+        title: str,
+        persons: list | None = None,
+        chatdatas: list | None = None,
+        chat_order: ChatOrder | None = None,
     ):
         self.id = ChatRoom.id
         ChatRoom.id += 1
         self.persons: list[Person] = persons or []
         self.chatdatas: list[ChatData] = chatdatas or []
         self.title = title
+        self.chat_order = chat_order or ChatOrder(chatroom_id=self.id)
 
     def __repr__(self):
         return f"ChatRoom(id={self.id}, title={self.title}, persons={self.persons}, chatdatas={self.chatdatas})"
@@ -23,6 +29,7 @@ class ChatRoom:
             "title": self.title,
             "persons": [person.to_dict() for person in self.persons],
             "chatdatas": [chat.to_dict() for chat in self.chatdatas],
+            "chat_order": self.chat_order.to_dict(),
         }
 
     def to_frontend(self):
@@ -31,6 +38,7 @@ class ChatRoom:
             "title": self.title,
             "persons": [person.to_frontend() for person in self.persons],
             "chatDatas": [chat.to_frontend() for chat in self.chatdatas],
+            "chatOrder": self.chat_order.to_frontend(),
         }
 
     def add_person(

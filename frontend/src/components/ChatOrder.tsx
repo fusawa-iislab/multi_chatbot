@@ -1,10 +1,15 @@
 "use client";
 import { useParams } from "next/navigation";
 import { X } from "phosphor-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
-import type { ChatRoomType } from "../types";
-import type { PersonType } from "../types";
+import type {
+	ChatOrderComment,
+	ChatOrderItem,
+	ChatOrderLoop,
+	ChatRoomType,
+	PersonType,
+} from "../types";
 
 const ChatRoomFetcher = async (url: string): Promise<ChatRoomType> => {
 	const res = await fetch(url);
@@ -13,24 +18,6 @@ const ChatRoomFetcher = async (url: string): Promise<ChatRoomType> => {
 	console.log("API Response:", data);
 	return data.chatRoom || data; // chatRoomプロパティがある場合はそれを使用、なければdataをそのまま使用
 };
-
-type Comment = {
-	id: number;
-	type: "comment";
-	personId: number;
-	parentId: number | null;
-	loopDepth: number;
-};
-
-type Loop = {
-	id: number;
-	type: "loop";
-	iteration: number;
-	parentId: number | null;
-	loopDepth: number;
-};
-
-type OrderItem = Comment | Loop;
 
 const PersonList: React.FC<{
 	persons: PersonType[];
@@ -131,8 +118,8 @@ const Loop: React.FC<{
 
 const loopIndent: number = 3;
 
-const OrderItemRenderer: React.FC<{
-	item: OrderItem;
+const ChatOrderItemRenderer: React.FC<{
+	item: ChatOrderItem;
 	persons: PersonType[];
 }> = ({ item, persons }) => {
 	const leftOffset = loopIndent * item.loopDepth;
@@ -170,13 +157,13 @@ const OrderItemRenderer: React.FC<{
 };
 
 export const ChatOrder = () => {
+	const { chatRoomId } = useParams<{ chatRoomId: string }>();
 	const [isPersonListOpen, setIsPersonListOpen] = useState(false);
-	const [order, setOrder] = useState<OrderItem[]>([]);
+	const [order, setOrder] = useState<ChatOrderItem[]>([]);
 	const [loopDepth, setLoopDepth] = useState(0);
 	const [selectedPersonId, setSelectedPersonId] = useState<number | null>(null);
-	const [parentIds, setParentIds] = useState<number[]>([]);
+	const [parentIds, setParentIds] = useState<number[]>([]); //これもuseEffectでchatRoomのchatOrder.orderから取得する
 
-	const { chatRoomId } = useParams<{ chatRoomId: string }>();
 	const {
 		data: chatRoom,
 		error: chatRoomError,
@@ -190,19 +177,15 @@ export const ChatOrder = () => {
 		},
 	);
 
-	if (chatRoomError) {
-		return <div>Error: {chatRoomError.message}</div>;
-	}
+	useEffect(() => {
+		if (chatRoom?.chatOrder?.order) {
+			setOrder(chatRoom.chatOrder.order);
+		}
+	}, [chatRoom]);
 
-	if (isLoading) {
-		return <div>Loading...</div>;
-	}
-
-	if (!chatRoom) {
-		return <div>No chat room data found</div>;
-	}
-
-	console.log("ChatRoom data:", chatRoom);
+	if (chatRoomError) return <div>Error: {chatRoomError.message}</div>;
+	if (isLoading) return <div>Loading...</div>;
+	if (!chatRoom) return <div>No chat room data found</div>;
 
 	const handleAddComment = () => {
 		if (selectedPersonId === null) {
@@ -210,7 +193,7 @@ export const ChatOrder = () => {
 			return;
 		}
 
-		const newComment: Comment = {
+		const newComment: ChatOrderComment = {
 			id: order.length + 1,
 			type: "comment",
 			personId: selectedPersonId,
@@ -222,7 +205,7 @@ export const ChatOrder = () => {
 	};
 
 	const handleAddLoop = () => {
-		const newLoop: Loop = {
+		const newLoop: ChatOrderLoop = {
 			id: order.length + 1,
 			type: "loop",
 			iteration: 3, // Default iteration
@@ -249,6 +232,29 @@ export const ChatOrder = () => {
 		setLoopDepth(0);
 		setSelectedPersonId(null);
 		setParentIds([]);
+	};
+
+	const handleSaveOrder = async () => {
+		const response = await fetch(`/api/chatroom/${chatRoomId}/chat-order`, {
+			method: "POST",
+			body: JSON.stringify(order),
+		});
+		if (!response.ok) {
+			alert("Failed to save order");
+			return;
+		}
+		alert("Order saved successfully");
+	};
+
+	const handleRunOrder = async () => {
+		const response = await fetch(`/api/chatroom/${chatRoomId}/chat-order/run`, {
+			method: "POST",
+		});
+		if (!response.ok) {
+			alert("Failed to run order");
+			return;
+		}
+		alert("Order run successfully");
 	};
 
 	return (
@@ -303,7 +309,7 @@ export const ChatOrder = () => {
 						Current Order:
 					</h3>
 					{order.map((item, index) => (
-						<OrderItemRenderer
+						<ChatOrderItemRenderer
 							key={item.id}
 							item={item}
 							persons={chatRoom.persons}
@@ -348,6 +354,20 @@ export const ChatOrder = () => {
 					Reset
 				</button>
 			</div>
+			<button
+				onClick={handleSaveOrder}
+				type="button"
+				className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors"
+			>
+				Save Order
+			</button>
+			<button
+				onClick={handleRunOrder}
+				type="button"
+				className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors"
+			>
+				Run Order
+			</button>
 		</div>
 	);
 };
