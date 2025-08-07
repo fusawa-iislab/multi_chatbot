@@ -156,6 +156,19 @@ const ChatOrderItemRenderer: React.FC<{
 	return null;
 };
 
+const calcParentIds = (order: ChatOrderItem[]): number[] => {
+	const depths = new Set(order.map((item) => item.loopDepth));
+	const parentIds: number[] = [];
+	for (const depth of depths) {
+		const items = order.filter((item) => item.loopDepth === depth);
+		const maxIdItem = items.reduce((max, item) =>
+			item.id > max.id ? item : max,
+		);
+		parentIds.push(maxIdItem.id);
+	}
+	return parentIds;
+};
+
 export const ChatOrder = () => {
 	const { chatRoomId } = useParams<{ chatRoomId: string }>();
 	const [isPersonListOpen, setIsPersonListOpen] = useState(false);
@@ -180,6 +193,13 @@ export const ChatOrder = () => {
 	useEffect(() => {
 		if (chatRoom?.chatOrder?.order) {
 			setOrder(chatRoom.chatOrder.order);
+			setParentIds(calcParentIds(chatRoom.chatOrder.order));
+			if (chatRoom.chatOrder.order.length > 0) {
+				setLoopDepth(
+					chatRoom.chatOrder.order[chatRoom.chatOrder.order.length - 1]
+						.loopDepth,
+				);
+			}
 		}
 	}, [chatRoom]);
 
