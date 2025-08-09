@@ -2,14 +2,15 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR, { mutate } from "swr";
+import { CHATORDER_LOOP_INDENT } from "../config/design";
 import type {
 	ChatDataType,
 	ChatOrderComment,
 	ChatOrderItem,
 	ChatOrderLoop,
 	ChatRoomType,
-	PersonType,
 } from "../types";
+import { ChatOrderBlockField } from "./ChatOrderBlockField";
 
 const ChatRoomFetcher = async (url: string): Promise<ChatRoomType> => {
 	const res = await fetch(url);
@@ -17,90 +18,6 @@ const ChatRoomFetcher = async (url: string): Promise<ChatRoomType> => {
 	const data = await res.json();
 	console.log("API Response:", data);
 	return data.chatRoom || data; // chatRoomプロパティがある場合はそれを使用、なければdataをそのまま使用
-};
-
-const Comment: React.FC<{
-	name: string;
-}> = ({ name }) => {
-	return (
-		<div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-md border border-blue-300 dark:border-blue-700">
-			<p className="font-semibold text-gray-900 dark:text-white">
-				Comment: {name}
-			</p>
-		</div>
-	);
-};
-
-const Loop: React.FC<{
-	iteration: number;
-	onRemove: () => void;
-	persons: PersonType[];
-}> = ({ iteration, onRemove, persons }) => {
-	const [numIteration, setNumIteration] = useState(iteration);
-	return (
-		<div className="bg-green-100 dark:bg-green-900 p-2 rounded-md border border-green-300 dark:border-green-700 max-w-xl">
-			<div className="flex justify-between items-center mb-2">
-				<div className="flex items-center gap-2">
-					<p className="font-semibold text-gray-900 dark:text-white">Loop</p>
-					<input
-						type="number"
-						value={numIteration}
-						onChange={(e) => setNumIteration(Number(e.target.value))}
-						className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md p-1 w-[3rem] text-center "
-						min={0}
-						max={10}
-					/>
-				</div>
-				<button
-					onClick={onRemove}
-					className="bg-red-500 text-white p-1 rounded text-xs hover:bg-red-600"
-					type="button"
-				>
-					Remove
-				</button>
-			</div>
-		</div>
-	);
-};
-
-const loopIndent: number = 3;
-
-const ChatOrderItemRenderer: React.FC<{
-	item: ChatOrderItem;
-	persons: PersonType[];
-}> = ({ item, persons }) => {
-	const leftOffset = loopIndent * item.loopDepth;
-
-	if (item.type === "comment") {
-		return (
-			<div
-				className="flex flex-col gap-2 max-w-xl relative"
-				style={{ left: `${leftOffset}rem` }}
-			>
-				<Comment
-					name={
-						persons.find((p) => p.id === item.personId)?.name ||
-						`Person ${item.personId}`
-					}
-				/>
-			</div>
-		);
-	}
-	if (item.type === "loop") {
-		return (
-			<div
-				className="flex flex-col gap-2 max-w-xl relative"
-				style={{ left: `${leftOffset}rem` }}
-			>
-				<Loop
-					iteration={item.iteration}
-					onRemove={() => {}} // TODO: Implement remove
-					persons={persons}
-				/>
-			</div>
-		);
-	}
-	return null;
 };
 
 const calcParentIds = (order: ChatOrderItem[]): number[] => {
@@ -120,7 +37,6 @@ export const ChatOrder = () => {
 	const { chatRoomId } = useParams<{ chatRoomId: string }>();
 	const [order, setOrder] = useState<ChatOrderItem[]>([]);
 	const [loopDepth, setLoopDepth] = useState(0);
-	const [selectedPersonId, setSelectedPersonId] = useState<number | null>(null);
 	const [parentIds, setParentIds] = useState<number[]>([]); //これもuseEffectでchatRoomのchatOrder.orderから取得する
 
 	const {
@@ -154,15 +70,10 @@ export const ChatOrder = () => {
 	if (!chatRoom) return <div>No chat room data found</div>;
 
 	const handleAddComment = () => {
-		if (selectedPersonId === null) {
-			alert("Please select a person first");
-			return;
-		}
-
 		const newComment: ChatOrderComment = {
 			id: order.length + 1,
 			type: "comment",
-			personId: selectedPersonId,
+			personId: chatRoom.persons[0].id,
 			parentId: parentIds.at(-1) || null,
 			loopDepth: loopDepth,
 		};
@@ -196,7 +107,6 @@ export const ChatOrder = () => {
 		}
 		setOrder([]);
 		setLoopDepth(0);
-		setSelectedPersonId(null);
 		setParentIds([]);
 	};
 
@@ -235,49 +145,17 @@ export const ChatOrder = () => {
 				</h1>
 			</div>
 
-			{/* Person Selection */}
-			<div className="flex flex-col gap-2">
-				<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-					Select Person for Comment:
-				</h3>
-				<div className="flex flex-wrap gap-2">
-					{chatRoom.persons?.map((person) => (
-						<button
-							key={person.id}
-							onClick={() => setSelectedPersonId(person.id)}
-							className={`p-2 rounded-md transition-colors ${
-								selectedPersonId === person.id
-									? "bg-blue-500 text-white"
-									: "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white"
-							}`}
-							type="button"
-						>
-							{person.name}
-						</button>
-					))}
-				</div>
-			</div>
-
-			{/* Order Display */}
 			{order.length > 0 && (
-				<div className="flex flex-col gap-2 max-w-2xl">
-					<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-						Current Order:
-					</h3>
-					{order.map((item, index) => (
-						<ChatOrderItemRenderer
-							key={item.id}
-							item={item}
-							persons={chatRoom.persons}
-						/>
-					))}
-				</div>
+				<ChatOrderBlockField
+					order={order}
+					persons={chatRoom.persons}
+					setOrder={setOrder}
+				/>
 			)}
 
-			{/* Control Buttons */}
 			<div
-				className="flex flex-wrap gap-2 text-sm relative"
-				style={{ left: `${loopIndent * loopDepth}rem` }}
+				className="flex flex-wrap gap-2 text-sm relative mb-2"
+				style={{ left: `${CHATORDER_LOOP_INDENT * loopDepth}rem` }}
 			>
 				<button
 					onClick={handleAddComment}
@@ -310,20 +188,22 @@ export const ChatOrder = () => {
 					Reset
 				</button>
 			</div>
-			<button
-				onClick={handleSaveOrder}
-				type="button"
-				className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors"
-			>
-				Save
-			</button>
-			<button
-				onClick={handleRunOrder}
-				type="button"
-				className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors"
-			>
-				Save and Run
-			</button>
+			<div className="flex flex-wrap gap-2">
+				<button
+					onClick={handleSaveOrder}
+					type="button"
+					className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors"
+				>
+					Save
+				</button>
+				<button
+					onClick={handleRunOrder}
+					type="button"
+					className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors"
+				>
+					Save and Run
+				</button>
+			</div>
 		</div>
 	);
 };
