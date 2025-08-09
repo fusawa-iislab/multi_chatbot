@@ -4,7 +4,7 @@ export async function POST(
 	request: NextRequest,
 	{ params }: { params: { chatRoomId: string } },
 ) {
-	const { chatRoomId } = params;
+	const { chatRoomId } = await params;
 	const order = await request.json();
 
 	const response = await fetch(

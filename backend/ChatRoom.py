@@ -69,7 +69,10 @@ class ChatRoom:
     def response_from_chatorder(self):
         if self.chatorder is None:
             return
+        print(self.chatorder.to_dict())
         response_order = self.chatorder.generate_person_ids()
+        print(response_order)
+        print(self.persons)
         chatdata_ids = []
         for person_id in response_order:
             chatdata_id = self.next_response(person_id)

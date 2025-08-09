@@ -108,6 +108,28 @@ async def reset_chatlog(chatroom_id: int):
     chatroom.chatdatas = []
     return {"message": "Chatlog reset successfully"}
 
+@app.post("/api/chatroom/{chatroom_id}/chat-order/run")
+async def run_chat_order(chatroom_id: int, request: Request):
+    data = await request.json()
+    print(f"Received data: {data}")
+    chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
+    if not chatroom:
+        return {"error": "Chat room not found"}, 404
+    for item in data:
+        item["loop_depth"] = item.pop("loopDepth")
+        item["parent_id"] = item.pop("parentId")
+        if item.get("personId"):
+            item["person_id"] = item.pop("personId")
+    print(data)
+    chatroom.add_chatorder(data)
+    chatdata_ids = chatroom.response_from_chatorder()
+    print(chatdata_ids)
+    # print(chatroom.chatorder.to_dict())
+    chatdatas_to_frontend = [
+        next((chatdata for chatdata in chatroom.chatdatas if chatdata.id == chatdata_id), None).to_frontend()
+        for chatdata_id in chatdata_ids
+    ]
+    return chatdatas_to_frontend
 
 @app.post("/api/chatroom/{chatroom_id}/chat-order")
 async def save_chat_order(chatroom_id: int, request: Request):
@@ -123,6 +145,8 @@ async def save_chat_order(chatroom_id: int, request: Request):
             item["person_id"] = item.pop("personId")
     chatroom.add_chatorder(data)
     return {"message": "Chat order saved successfully"}
+
+
 
 
 @app.get("/")

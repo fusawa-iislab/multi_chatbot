@@ -1,14 +1,14 @@
 "use client";
 import { useParams } from "next/navigation";
-import { X } from "phosphor-react";
 import { useEffect, useState } from "react";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import type {
 	ChatOrderComment,
 	ChatOrderItem,
 	ChatOrderLoop,
 	ChatRoomType,
 	PersonType,
+	ChatDataType,
 } from "../types";
 
 const ChatRoomFetcher = async (url: string): Promise<ChatRoomType> => {
@@ -17,59 +17,6 @@ const ChatRoomFetcher = async (url: string): Promise<ChatRoomType> => {
 	const data = await res.json();
 	console.log("API Response:", data);
 	return data.chatRoom || data; // chatRoomプロパティがある場合はそれを使用、なければdataをそのまま使用
-};
-
-const PersonList: React.FC<{
-	persons: PersonType[];
-	setIsPersonListOpen: (isOpen: boolean) => void;
-}> = ({ persons, setIsPersonListOpen }) => {
-	const chatbots = persons.filter((person) => !person.isUser);
-	const users = persons.filter((person) => person.isUser);
-
-	return (
-		<div className="flex flex-col gap-2 p-2">
-			<div className="flex justify-between items-center">
-				<h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-					Person List
-				</h2>
-				<button
-					onClick={() => setIsPersonListOpen(false)}
-					className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors"
-					type="button"
-				>
-					<X size={24} />
-				</button>
-			</div>
-			{chatbots.length > 0 && (
-				<div>
-					<h2 className="text-gray-900 dark:text-white">Chatbots</h2>
-					<div className="flex flex-col gap-2">
-						{chatbots.map((person) => (
-							<div key={person.id}>
-								<p className="text-gray-700 dark:text-gray-300">
-									{person.name}
-								</p>
-							</div>
-						))}
-					</div>
-				</div>
-			)}
-			{users.length > 0 && (
-				<div>
-					<h2 className="text-gray-900 dark:text-white">Users</h2>
-					<div className="flex flex-col gap-2">
-						{users.map((person) => (
-							<div key={person.id}>
-								<p className="text-gray-700 dark:text-gray-300">
-									{person.name}
-								</p>
-							</div>
-						))}
-					</div>
-				</div>
-			)}
-		</div>
-	);
 };
 
 const Comment: React.FC<{
@@ -171,7 +118,6 @@ const calcParentIds = (order: ChatOrderItem[]): number[] => {
 
 export const ChatOrder = () => {
 	const { chatRoomId } = useParams<{ chatRoomId: string }>();
-	const [isPersonListOpen, setIsPersonListOpen] = useState(false);
 	const [order, setOrder] = useState<ChatOrderItem[]>([]);
 	const [loopDepth, setLoopDepth] = useState(0);
 	const [selectedPersonId, setSelectedPersonId] = useState<number | null>(null);
@@ -264,17 +210,21 @@ export const ChatOrder = () => {
 			return;
 		}
 		alert("Order saved successfully");
+		mutate(`/api/chatroom/${chatRoomId}`);
 	};
 
 	const handleRunOrder = async () => {
 		const response = await fetch(`/api/chatroom/${chatRoomId}/chat-order/run`, {
 			method: "POST",
+			body: JSON.stringify(order),
 		});
 		if (!response.ok) {
 			alert("Failed to run order");
 			return;
 		}
 		alert("Order run successfully");
+		const data: ChatDataType[] = await response.json();
+		console.log(data);
 	};
 
 	return (
@@ -283,21 +233,7 @@ export const ChatOrder = () => {
 				<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
 					Chat Order
 				</h1>
-				<button
-					onClick={() => setIsPersonListOpen(!isPersonListOpen)}
-					className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors"
-					type="button"
-				>
-					{isPersonListOpen ? "Hide" : "Show"} Person List
-				</button>
 			</div>
-
-			{isPersonListOpen && (
-				<PersonList
-					persons={chatRoom.persons}
-					setIsPersonListOpen={setIsPersonListOpen}
-				/>
-			)}
 
 			{/* Person Selection */}
 			<div className="flex flex-col gap-2">
@@ -379,14 +315,14 @@ export const ChatOrder = () => {
 				type="button"
 				className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors"
 			>
-				Save Order
+				Save
 			</button>
 			<button
 				onClick={handleRunOrder}
 				type="button"
 				className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors"
 			>
-				Run Order
+				Save and Run
 			</button>
 		</div>
 	);
