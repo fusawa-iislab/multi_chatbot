@@ -18,7 +18,7 @@ class Person:
             raise ValueError("Persona is required for chatbots")
 
     def __repr__(self):
-        return f"Person(name={self.name}, persona={self.persona})"
+        return f"Person(id={self.id}, name={self.name}, persona={self.persona}, chatroom_id={self.chatroom_id}, is_user={self.is_user})"
 
     def to_dict(self):
         return {

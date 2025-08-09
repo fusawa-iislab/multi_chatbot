@@ -13,17 +13,26 @@ general_room = ChatRoom(
 
 eve = Person("Eve", "A mysterious and attractive person", chatroom_id=2)
 
-chat_eve_1 = ChatData(name=eve.name, content="I have a secret.", chatroom_id=2)
-chat_you_1 = ChatData(name=you.name, content="Tell me.", chatroom_id=2)
+chat_eve_1 = ChatData(
+    name=eve.name, person_id=eve.id, content="I have a secret.", chatroom_id=2
+)
+chat_you_1 = ChatData(
+    name=you.name, person_id=you.id, content="Tell me.", chatroom_id=2
+)
 room_a = ChatRoom(title="a", persons=[eve, you], chatdatas=[chat_eve_1, chat_you_1])
 
 # ChatRoom 3: "b" with Dave
 dave = Person("Dave", "A cheerful and optimistic person", chatroom_id=3)
 
 chat_dave_1 = ChatData(
-    name=dave.name, content="It's nice weather today, isn't it?", chatroom_id=3
+    name=dave.name,
+    person_id=dave.id,
+    content="It's nice weather today, isn't it?",
+    chatroom_id=3,
 )
-chat_you_2 = ChatData(name=you.name, content="It really is!", chatroom_id=3)
+chat_you_2 = ChatData(
+    name=you.name, person_id=you.id, content="It really is!", chatroom_id=3
+)
 room_b = ChatRoom(title="b", persons=[dave, you], chatdatas=[chat_dave_1, chat_you_2])
 
 chatrooms_data = [general_room, room_a, room_b]

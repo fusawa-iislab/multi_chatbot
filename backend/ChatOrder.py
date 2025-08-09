@@ -1,8 +1,13 @@
+from __future__ import annotations
+
+
 class ChatOrder:
-    def __init__(self, input: list | None = None, chatroom_id: int | None = None):
-        if input is None:
-            input = []
-        self.order = create_chat_order(input)
+    def __init__(
+        self, order: list[Comment | Loop] | None = None, chatroom_id: int | None = None
+    ):
+        if order is None:
+            order = []
+        self.order = order
         self.chatroom_id = chatroom_id
 
     def to_dict(self):
@@ -17,25 +22,28 @@ class ChatOrder:
             "chatroomId": self.chatroom_id,
         }
 
+    def generate_person_ids(self):
+        person_ids = []
+        current_loop_depth = 0
 
-def create_chat_order(input: list):
-    order = []
-    for item in input:
-        if item["type"] == "comment":
-            order.append(
-                Comment(
-                    item["id"], item["person_id"], item["parent_id"], item["loop_depth"]
-                )
-            )
-        elif item["type"] == "loop":
-            order.append(
-                Loop(
-                    item["id"], item["parent_id"], item["loop_depth"], item["iteration"]
-                )
-            )
-        else:
-            raise ValueError(f"Invalid order type: {item['type']}")
-    return order
+        def process(item):
+            nonlocal current_loop_depth
+            if item.type == "comment" and item.loop_depth == current_loop_depth:
+                person_ids.append(item.person_id)
+            elif item.type == "loop" and item.loop_depth == current_loop_depth:
+                current_loop_depth += 1
+                children = [child for child in self.order if child.parent_id == item.id]
+                children.sort(key=lambda x: x.id)
+                if children:
+                    for _ in range(item.iteration):
+                        for child in children:
+                            process(child)
+                current_loop_depth -= 1
+
+        if self.order:
+            for item in self.order:
+                process(item)
+        return person_ids
 
 
 class Comment:
@@ -100,3 +108,28 @@ class Loop:
             "loopDepth": self.loop_depth,
             "iteration": self.iteration,
         }
+
+
+def format_chatorder(input: list):
+    order = []
+    for item in input:
+        if item["type"] == "comment":
+            order.append(
+                Comment(
+                    item["id"], item["person_id"], item["parent_id"], item["loop_depth"]
+                )
+            )
+        elif item["type"] == "loop":
+            order.append(
+                Loop(
+                    item["id"], item["parent_id"], item["loop_depth"], item["iteration"]
+                )
+            )
+        else:
+            raise ValueError(f"Invalid order type: {item['type']}")
+    return order
+
+
+def create_chatorder(input: list, chatroom_id: int):
+    order = format_chatorder(input)
+    return ChatOrder(order, chatroom_id)

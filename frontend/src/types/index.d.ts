@@ -17,6 +17,7 @@ export type ChatDataType = {
 	id: number;
 	name: string;
 	content: string;
+	personId: number;
 };
 
 export type ChatOrderComment = {
