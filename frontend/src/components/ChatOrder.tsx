@@ -3,12 +3,12 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR, { mutate } from "swr";
 import type {
+	ChatDataType,
 	ChatOrderComment,
 	ChatOrderItem,
 	ChatOrderLoop,
 	ChatRoomType,
 	PersonType,
-	ChatDataType,
 } from "../types";
 
 const ChatRoomFetcher = async (url: string): Promise<ChatRoomType> => {
