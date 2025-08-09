@@ -4,8 +4,6 @@ from ChatRoom import create_chatroom
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from llm import get_response
-from prompt import create_prompt
 from test_data import chatrooms_data
 
 load_dotenv()
@@ -77,13 +75,11 @@ async def chat_reply(chatroom_id: int, request: Request):
     if person.is_user:
         print(f"User {person.name} cannot be a chatbot in chat room {chatroom_id}")
         return {"error": "User cannot be a chatbot"}, 400
-    # 将来的に構造化します
-    prompt = create_prompt(chatroom, person)
-    response_text = get_response(prompt, max_output_tokens=1000)
-    chatroom.add_chatdata(
-        name=person.name, content=response_text, chatroom_id=chatroom_id
-    )
-    return chatroom.chatdatas[-1].to_frontend()
+    chatdata_id = chatroom.next_response(person_id)
+    return next(
+        (chatdata for chatdata in chatroom.chatdatas if chatdata.id == chatdata_id),
+        None,
+    ).to_frontend()
 
 
 @app.post("/api/chatroom/{chatroom_id}/user-chat")
@@ -110,7 +106,50 @@ async def reset_chatlog(chatroom_id: int):
     if not chatroom:
         return {"error": "Chat room not found"}, 404
     chatroom.chatdatas = []
-    return {"message": "Chat log reset successfully"}
+    return {"message": "Chatlog reset successfully"}
+
+
+@app.post("/api/chatroom/{chatroom_id}/chat-order/run")
+async def run_chat_order(chatroom_id: int, request: Request):
+    data = await request.json()
+    print(f"Received data: {data}")
+    chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
+    if not chatroom:
+        return {"error": "Chat room not found"}, 404
+    for item in data:
+        item["loop_depth"] = item.pop("loopDepth")
+        item["parent_id"] = item.pop("parentId")
+        if item.get("personId"):
+            item["person_id"] = item.pop("personId")
+    print(data)
+    chatroom.add_chatorder(data)
+    chatdata_ids = chatroom.response_from_chatorder()
+    print(chatdata_ids)
+    # print(chatroom.chatorder.to_dict())
+    chatdatas_to_frontend = [
+        next(
+            (chatdata for chatdata in chatroom.chatdatas if chatdata.id == chatdata_id),
+            None,
+        ).to_frontend()
+        for chatdata_id in chatdata_ids
+    ]
+    return chatdatas_to_frontend
+
+
+@app.post("/api/chatroom/{chatroom_id}/chat-order")
+async def save_chat_order(chatroom_id: int, request: Request):
+    data = await request.json()
+    print(f"Received data: {data}")
+    chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
+    if not chatroom:
+        return {"error": "Chat room not found"}, 404
+    for item in data:
+        item["loop_depth"] = item.pop("loopDepth")
+        item["parent_id"] = item.pop("parentId")
+        if item.get("personId"):
+            item["person_id"] = item.pop("personId")
+    chatroom.add_chatorder(data)
+    return {"message": "Chat order saved successfully"}
 
 
 @app.get("/")
