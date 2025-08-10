@@ -130,7 +130,7 @@ export const ChatOrderBlockField = ({
 
 	return (
 		<div className="flex flex-col gap-2 max-w-2xl">
-			{order.map((item, index) => (
+			{order.map((item) => (
 				<ChatOrderItemRenderer
 					key={item.id}
 					item={item}

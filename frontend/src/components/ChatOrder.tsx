@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import useSWR, { mutate } from "swr";
 import { CHATORDER_LOOP_INDENT } from "../config/design";
 import type {
-	ChatDataType,
 	ChatOrderComment,
 	ChatOrderItem,
 	ChatOrderLoop,
