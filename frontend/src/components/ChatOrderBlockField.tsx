@@ -8,7 +8,7 @@ const Comment: React.FC<{
 	handleChangeCommentPerson: (id: number, personId: number) => void;
 }> = ({ persons, personId, id, handleChangeCommentPerson }) => {
 	return (
-		<div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-md border border-blue-300 dark:border-blue-700 font-semibold text-gray-900 dark:text-white">
+		<div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-md border border-blue-300 dark:border-blue-700 font-semibold text-gray-900 dark:text-white w-full">
 			<span className="mr-2">Comment:</span>
 			<select
 				value={personId}
@@ -34,7 +34,7 @@ const Loop: React.FC<{
 	) => void;
 }> = ({ iteration, id, handleChangeLoopIteration }) => {
 	return (
-		<div className="bg-green-100 dark:bg-green-900 p-2 rounded-md border border-green-300 dark:border-green-700 max-w-xl">
+		<div className="bg-green-100 dark:bg-green-900 p-2 rounded-md border border-green-300 dark:border-green-700 w-full">
 			<div className="flex justify-between items-center mb-2">
 				<div className="flex items-center gap-2">
 					<p className="font-semibold text-gray-900 dark:text-white">Loop</p>
@@ -71,7 +71,7 @@ const ChatOrderItemRenderer: React.FC<{
 	if (item.type === "comment") {
 		return (
 			<div
-				className="flex flex-col gap-2 max-w-xl relative"
+				className="flex flex-col gap-2 max-w-sm relative"
 				style={{ left: `${leftOffset}rem` }}
 			>
 				<Comment
@@ -86,7 +86,7 @@ const ChatOrderItemRenderer: React.FC<{
 	if (item.type === "loop") {
 		return (
 			<div
-				className="flex flex-col gap-2 max-w-xl relative"
+				className="flex flex-col gap-2 max-w-sm relative"
 				style={{ left: `${leftOffset}rem` }}
 			>
 				<Loop

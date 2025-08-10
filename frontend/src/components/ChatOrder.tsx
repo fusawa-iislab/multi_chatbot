@@ -215,7 +215,7 @@ export const ChatOrder = () => {
 				</h1>
 			</div>
 			<div className="flex gap-4">
-				<div className="flex flex-col gap-2 w-1/2">
+				<div className="flex flex-col gap-2 w-1/2 overflow-x-auto">
 					{order.length > 0 && (
 						<ChatOrderBlockField
 							order={order}
