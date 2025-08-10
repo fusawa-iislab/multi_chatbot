@@ -96,7 +96,7 @@ export const ChatOrder = () => {
 		ws.current.onerror = (event) => {
 			setIsConnected(false);
 			setIsRunning(false);
-			alert("WebSocket error");
+			console.log("WebSocket error", event);
 		};
 		return () => {
 			if (ws.current) {
@@ -187,6 +187,16 @@ export const ChatOrder = () => {
 		setOpenUserInput(false);
 	};
 
+	const handleResetChatLog = async () => {
+		const response = await fetch(`/api/chatroom/${chatRoomId}/reset-chatlog`, {
+			method: "POST",
+		});
+		if (!response.ok) {
+			alert("Failed to reset chat log");
+		}
+		mutate(`/api/chatroom/${chatRoomId}`);
+	};
+
 	return (
 		<div className="flex flex-col gap-4 p-4">
 			<div className="flex items-center gap-2">
@@ -205,69 +215,89 @@ export const ChatOrder = () => {
 					Chat Order
 				</h1>
 			</div>
+			<div className="flex gap-4">
+				<div className="flex flex-col gap-2 w-1/2">
+					{order.length > 0 && (
+						<ChatOrderBlockField
+							order={order}
+							persons={chatRoom.persons}
+							setOrder={setOrder}
+						/>
+					)}
 
-			{order.length > 0 && (
-				<ChatOrderBlockField
-					order={order}
-					persons={chatRoom.persons}
-					setOrder={setOrder}
-				/>
-			)}
-
-			<div
-				className="flex flex-wrap gap-2 text-sm relative mb-2"
-				style={{ left: `${CHATORDER_LOOP_INDENT * loopDepth}rem` }}
-			>
-				<button
-					onClick={handleAddComment}
-					className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition-colors"
-					type="button"
-				>
-					Add Comment
-				</button>
-				<button
-					onClick={handleAddLoop}
-					className="bg-green-500 text-white p-2 rounded-md hover:bg-green-600 transition-colors"
-					type="button"
-				>
-					Add Loop
-				</button>
-				{loopDepth > 0 && (
-					<button
-						onClick={handleEndLoop}
-						className="bg-orange-500 text-white p-2 rounded-md hover:bg-orange-600 transition-colors"
-						type="button"
+					<div
+						className="flex flex-wrap gap-2 text-sm relative mb-2"
+						style={{ left: `${CHATORDER_LOOP_INDENT * loopDepth}rem` }}
 					>
-						End Loop
-					</button>
+						<button
+							onClick={handleAddComment}
+							className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition-colors"
+							type="button"
+						>
+							Add Comment
+						</button>
+						<button
+							onClick={handleAddLoop}
+							className="bg-green-500 text-white p-2 rounded-md hover:bg-green-600 transition-colors"
+							type="button"
+						>
+							Add Loop
+						</button>
+						{loopDepth > 0 && (
+							<button
+								onClick={handleEndLoop}
+								className="bg-orange-500 text-white p-2 rounded-md hover:bg-orange-600 transition-colors"
+								type="button"
+							>
+								End Loop
+							</button>
+						)}
+						<button
+							onClick={handleReset}
+							className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors"
+							type="button"
+						>
+							Reset
+						</button>
+					</div>
+					<div className="flex flex-wrap gap-2">
+						<button
+							onClick={handleSaveOrder}
+							type="button"
+							className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors"
+						>
+							Save
+						</button>
+						<button
+							onClick={handleRunOrder}
+							type="button"
+							className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors"
+						>
+							Save and Run
+						</button>
+					</div>
+				</div>
+				{chatRoom.chatDatas.length > 0 && (
+					<div className="flex flex-col gap-2 w-1/2 h-full bg-gray-700 p-2 rounded-md">
+						<div className="flex gap-4 items-center">
+							<h2 className="text-lg font-bold text-gray-900 dark:text-white">
+								ChatLog
+							</h2>
+							<button
+								onClick={handleResetChatLog}
+								className="text-sm bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition-colors w-[5rem]"
+								type="button"
+							>
+								Reset Log
+							</button>
+						</div>
+						{isRunning && (
+							<div className="text-sm text-gray-500">{runnningMessage}</div>
+						)}
+						<ChatLog chatLog={chatRoom.chatDatas} maxHeight="70vh" />
+					</div>
 				)}
-				<button
-					onClick={handleReset}
-					className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors"
-					type="button"
-				>
-					Reset
-				</button>
 			</div>
-			<div className="flex flex-wrap gap-2">
-				<button
-					onClick={handleSaveOrder}
-					type="button"
-					className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors"
-				>
-					Save
-				</button>
-				<button
-					onClick={handleRunOrder}
-					type="button"
-					className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors"
-				>
-					Save and Run
-				</button>
-			</div>
-			{isRunning && (
-				<div className="text-sm text-gray-500">{runnningMessage}</div>
-			)}
 			{openUserInput && (
 				<div className="fixed bottom-0 left-0 right-0 w-screen flex flex-col items-center bg-gray-800 p-2">
 					<textarea
@@ -293,7 +323,6 @@ export const ChatOrder = () => {
 					</button>
 				</div>
 			)}
-			<ChatLog chatLog={chatRoom.chatDatas} />
 		</div>
 	);
 };
