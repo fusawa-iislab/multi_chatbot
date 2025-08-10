@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useSWR, { mutate } from "swr";
 import { CHATORDER_LOOP_INDENT } from "../config/design";
 import type {
@@ -10,6 +10,7 @@ import type {
 	ChatOrderLoop,
 	ChatRoomType,
 } from "../types";
+import { ChatLog } from "./ChatLog";
 import { ChatOrderBlockField } from "./ChatOrderBlockField";
 
 const ChatRoomFetcher = async (url: string): Promise<ChatRoomType> => {
@@ -37,7 +38,14 @@ export const ChatOrder = () => {
 	const { chatRoomId } = useParams<{ chatRoomId: string }>();
 	const [order, setOrder] = useState<ChatOrderItem[]>([]);
 	const [loopDepth, setLoopDepth] = useState(0);
-	const [parentIds, setParentIds] = useState<number[]>([]); //これもuseEffectでchatRoomのchatOrder.orderから取得する
+	const [parentIds, setParentIds] = useState<number[]>([]);
+
+	const ws = useRef<WebSocket | null>(null);
+	const [isConnected, setIsConnected] = useState(false);
+	const [isRunning, setIsRunning] = useState(false);
+	const [runnningMessage, setRunnningMessage] = useState("");
+	const [openUserInput, setOpenUserInput] = useState(false);
+	const [userInput, setUserInput] = useState("");
 
 	const {
 		data: chatRoom,
@@ -51,6 +59,50 @@ export const ChatOrder = () => {
 			revalidateOnReconnect: false,
 		},
 	);
+
+	useEffect(() => {
+		if (ws.current) {
+			ws.current.close();
+		}
+		ws.current = new WebSocket(
+			`${process.env.NEXT_PUBLIC_BACKEND_SOCKET_URL}/api/chatroom/${chatRoomId}/chat-order/run`,
+		);
+		ws.current.onmessage = (event) => {
+			const data = JSON.parse(event.data);
+			if (data.type === "message") {
+				setRunnningMessage(data.content);
+			} else if (data.type === "input-request") {
+				setOpenUserInput(true);
+				setRunnningMessage(data.content);
+			} else if (data.type === "chat-response") {
+				console.log(data.content);
+				mutate(`/api/chatroom/${chatRoomId}`);
+			} else if (data.type === "error") {
+				alert(data.error ?? data.content ?? "WebSocket error");
+			} else if (data.type === "end") {
+				setIsRunning(false);
+				alert(data.content ?? "Chat order finished");
+			}
+		};
+		ws.current.onopen = () => {
+			setIsConnected(true);
+			console.log("WebSocket connected");
+		};
+		ws.current.onclose = () => {
+			setIsConnected(false);
+			console.log("WebSocket closed");
+		};
+		ws.current.onerror = (event) => {
+			setIsConnected(false);
+			setIsRunning(false);
+			alert("WebSocket error");
+		};
+		return () => {
+			if (ws.current) {
+				ws.current.close();
+			}
+		};
+	}, [chatRoomId]);
 
 	useEffect(() => {
 		if (chatRoom?.chatOrder?.order) {
@@ -119,22 +171,19 @@ export const ChatOrder = () => {
 			alert("Failed to save order");
 			return;
 		}
-		alert("Order saved successfully");
 		mutate(`/api/chatroom/${chatRoomId}`);
+		alert("Order saved successfully");
 	};
 
 	const handleRunOrder = async () => {
-		const response = await fetch(`/api/chatroom/${chatRoomId}/chat-order/run`, {
-			method: "POST",
-			body: JSON.stringify(order),
-		});
-		if (!response.ok) {
-			alert("Failed to run order");
+		if (!ws.current || !isConnected) {
+			alert("WebSocket is not connected");
 			return;
 		}
-		alert("Order run successfully");
-		const data: ChatDataType[] = await response.json();
-		console.log(data);
+		ws.current.send(JSON.stringify(order));
+		setIsRunning(true);
+		setRunnningMessage("Running... Please wait...");
+		setOpenUserInput(false);
 	};
 
 	return (
@@ -204,6 +253,35 @@ export const ChatOrder = () => {
 					Save and Run
 				</button>
 			</div>
+			{isRunning && (
+				<div className="text-sm text-gray-500">{runnningMessage}</div>
+			)}
+			{openUserInput && (
+				<div className="fixed bottom-0 left-0 right-0 w-screen flex flex-col items-center bg-gray-800 p-2">
+					<textarea
+						className="mt-2 w-7/8 p-2 border border-gray-400 rounded resize-none"
+						rows={3}
+						onChange={(e) =>
+							setUserInput((e.target as HTMLTextAreaElement).value)
+						}
+						value={userInput}
+					/>
+					<button
+						className="self-end mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+						onClick={() => {
+							ws.current?.send(
+								JSON.stringify({ type: "input", content: userInput }),
+							);
+							setOpenUserInput(false);
+							setUserInput("");
+						}}
+						type="button"
+					>
+						Send
+					</button>
+				</div>
+			)}
+			<ChatLog chatLog={chatRoom.chatDatas} />
 		</div>
 	);
 };

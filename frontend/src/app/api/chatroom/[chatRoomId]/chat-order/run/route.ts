@@ -9,7 +9,7 @@ export async function POST(
 	const order = await request.json();
 
 	const response = await fetch(
-		`${process.env.BACKEND_API_URL}/api/chatroom/${chatRoomId}/chat-order/run`,
+		`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/chatroom/${chatRoomId}/chat-order/run`,
 		{
 			method: "POST",
 			body: JSON.stringify(order),
