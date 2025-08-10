@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useSWR, { mutate } from "swr";
@@ -188,7 +189,18 @@ export const ChatOrder = () => {
 
 	return (
 		<div className="flex flex-col gap-4 p-4">
-			<div className="flex justify-between items-center">
+			<div className="flex items-center gap-2">
+				<Link
+					href={`/chatroom/${chatRoomId}`}
+					className="flex items-center gap-2"
+				>
+					<button
+						className="bg-transparent text-blue-500 p-2 rounded-md hover:bg-blue-100 transition-colors"
+						type="button"
+					>
+						←
+					</button>
+				</Link>
 				<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
 					Chat Order
 				</h1>

@@ -1,8 +1,9 @@
+import asyncio
 import os
 
 from ChatRoom import create_chatroom
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from test_data import chatrooms_data
 
@@ -109,37 +110,74 @@ async def reset_chatlog(chatroom_id: int):
     return {"message": "Chatlog reset successfully"}
 
 
-@app.post("/api/chatroom/{chatroom_id}/chat-order/run")
-async def run_chat_order(chatroom_id: int, request: Request):
-    data = await request.json()
-    print(f"Received data: {data}")
-    chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
-    if not chatroom:
-        return {"error": "Chat room not found"}, 404
-    for item in data:
-        item["loop_depth"] = item.pop("loopDepth")
-        item["parent_id"] = item.pop("parentId")
-        if item.get("personId"):
-            item["person_id"] = item.pop("personId")
-    print(data)
-    chatroom.add_chatorder(data)
-    chatdata_ids = chatroom.response_from_chatorder()
-    print(chatdata_ids)
-    # print(chatroom.chatorder.to_dict())
-    chatdatas_to_frontend = [
-        next(
-            (chatdata for chatdata in chatroom.chatdatas if chatdata.id == chatdata_id),
-            None,
-        ).to_frontend()
-        for chatdata_id in chatdata_ids
-    ]
-    return chatdatas_to_frontend
+@app.websocket("/api/chatroom/{chatroom_id}/chat-order/run")
+async def run_chat_order(websocket: WebSocket, chatroom_id: int):
+    try:
+        await websocket.accept()
+        data = await websocket.receive_json()
+        chatroom = next(
+            (room for room in chatrooms_data if room.id == chatroom_id), None
+        )
+        if not chatroom:
+            await websocket.send_json({"error": "Chat room not found", "type": "error"})
+            return
+        for item in data:
+            item["loop_depth"] = item.pop("loopDepth")
+            item["parent_id"] = item.pop("parentId")
+            if item.get("personId"):
+                item["person_id"] = item.pop("personId")
+        chatroom.add_chatorder(data)
+        person_ids = chatroom.chatorder.generate_person_ids()
+        for person_id in person_ids:
+            person = next((p for p in chatroom.persons if p.id == person_id), None)
+            print(f"person: {person}")
+            if not person:
+                await websocket.send_json(
+                    {"error": "Person not found", "type": "error"}
+                )
+            elif person.is_user:
+                await websocket.send_json(
+                    {
+                        "type": "input-request",
+                        "content": f"{person.name}'s input is required",
+                    }
+                )
+                user_input = await websocket.receive_json()
+                chatroom.add_chatdata(
+                    name=person.name, content=user_input, chatroom_id=chatroom_id
+                )
+            else:
+                await websocket.send_json(
+                    {
+                        "type": "message",
+                        "content": f"generating... {person.name}'s response...",
+                    }
+                )
+                # Yield to the event loop so the previous message flushes to the client
+                await asyncio.sleep(0)
+                # Execute blocking LLM call off the event loop
+                chatdata_id = await asyncio.to_thread(chatroom.next_response, person_id)
+                chatdata = next(
+                    (c for c in chatroom.chatdatas if c.id == chatdata_id), None
+                )
+                if chatdata:
+                    await websocket.send_json(
+                        {"type": "chat-response", "content": chatdata.to_frontend()}
+                    )
+                else:
+                    await websocket.send_json(
+                        {"type": "error", "content": "Chatdata not found"}
+                    )
+        await websocket.send_json(
+            {"type": "end", "content": "Chat order run successfully"}
+        )
+    except WebSocketDisconnect:
+        print(f"WebSocket disconnected for chatroom {chatroom_id}")
 
 
 @app.post("/api/chatroom/{chatroom_id}/chat-order")
 async def save_chat_order(chatroom_id: int, request: Request):
     data = await request.json()
-    print(f"Received data: {data}")
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if not chatroom:
         return {"error": "Chat room not found"}, 404
