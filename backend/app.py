@@ -143,8 +143,20 @@ async def run_chat_order(websocket: WebSocket, chatroom_id: int):
                     }
                 )
                 user_input = await websocket.receive_json()
-                chatroom.add_chatdata(
-                    name=person.name, content=user_input, chatroom_id=chatroom_id
+                chatdata_id = chatroom.add_chatdata(
+                    name=person.name,
+                    person_id=person_id,
+                    content=user_input["content"],
+                    chatroom_id=chatroom_id,
+                )
+                await websocket.send_json(
+                    {
+                        "type": "chat-response",
+                        "content": next(
+                            (c for c in chatroom.chatdatas if c.id == chatdata_id),
+                            None,
+                        ).to_frontend(),
+                    }
                 )
             else:
                 await websocket.send_json(
