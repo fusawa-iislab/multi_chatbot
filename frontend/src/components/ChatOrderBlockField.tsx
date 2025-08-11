@@ -6,21 +6,39 @@ const Comment: React.FC<{
 	personId: number;
 	id: number;
 	handleChangeCommentPerson: (id: number, personId: number) => void;
-}> = ({ persons, personId, id, handleChangeCommentPerson }) => {
+	handleDeleteComment: (id: number) => void;
+}> = ({
+	persons,
+	personId,
+	id,
+	handleChangeCommentPerson,
+	handleDeleteComment,
+}) => {
 	return (
-		<div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-md border border-blue-300 dark:border-blue-700 font-semibold text-gray-900 dark:text-white w-full">
-			<span className="mr-2">Comment:</span>
-			<select
-				value={personId}
-				onChange={(e) => handleChangeCommentPerson(id, Number(e.target.value))}
-				className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md p-1 text-center "
+		<div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-md border border-blue-300 dark:border-blue-700 font-semibold text-gray-900 dark:text-white w-full flex justify-between items-center">
+			<div>
+				<span className="mr-2">Comment:</span>
+				<select
+					value={personId}
+					onChange={(e) =>
+						handleChangeCommentPerson(id, Number(e.target.value))
+					}
+					className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md p-1 text-center "
+				>
+					{persons.map((person) => (
+						<option key={person.id} value={person.id}>
+							{person.name}
+						</option>
+					))}
+				</select>
+			</div>
+			<button
+				className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors text-sm border border-red-300 dark:border-red-700"
+				type="button"
+				onClick={() => handleDeleteComment(id)}
 			>
-				{persons.map((person) => (
-					<option key={person.id} value={person.id}>
-						{person.name}
-					</option>
-				))}
-			</select>
+				Delete
+			</button>
 		</div>
 	);
 };
@@ -32,9 +50,10 @@ const Loop: React.FC<{
 		e: React.ChangeEvent<HTMLInputElement>,
 		id: number,
 	) => void;
-}> = ({ iteration, id, handleChangeLoopIteration }) => {
+	handleDeleteLoop: (id: number) => void;
+}> = ({ iteration, id, handleChangeLoopIteration, handleDeleteLoop }) => {
 	return (
-		<div className="bg-green-100 dark:bg-green-900 p-2 rounded-md border border-green-300 dark:border-green-700 w-full">
+		<div className="bg-green-100 dark:bg-green-900 p-2 rounded-md border border-green-300 dark:border-green-700 w-full flex justify-between items-center">
 			<div className="flex justify-between items-center mb-2">
 				<div className="flex items-center gap-2">
 					<p className="font-semibold text-gray-900 dark:text-white">Loop</p>
@@ -48,6 +67,13 @@ const Loop: React.FC<{
 					/>
 				</div>
 			</div>
+			<button
+				className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors text-sm border border-red-300 dark:border-red-700"
+				type="button"
+				onClick={() => handleDeleteLoop(id)}
+			>
+				Delete
+			</button>
 		</div>
 	);
 };
@@ -60,11 +86,15 @@ const ChatOrderItemRenderer: React.FC<{
 		id: number,
 	) => void;
 	handleChangeCommentPerson: (id: number, personId: number) => void;
+	handleDeleteComment: (id: number) => void;
+	handleDeleteLoop: (id: number) => void;
 }> = ({
 	item,
 	persons,
 	handleChangeLoopIteration,
 	handleChangeCommentPerson,
+	handleDeleteComment,
+	handleDeleteLoop,
 }) => {
 	const leftOffset = CHATORDER_LOOP_INDENT * item.loopDepth;
 
@@ -79,6 +109,7 @@ const ChatOrderItemRenderer: React.FC<{
 					personId={item.personId}
 					id={item.id}
 					handleChangeCommentPerson={handleChangeCommentPerson}
+					handleDeleteComment={handleDeleteComment}
 				/>
 			</div>
 		);
@@ -93,6 +124,7 @@ const ChatOrderItemRenderer: React.FC<{
 					iteration={item.iteration}
 					id={item.id}
 					handleChangeLoopIteration={handleChangeLoopIteration}
+					handleDeleteLoop={handleDeleteLoop}
 				/>
 			</div>
 		);
@@ -104,12 +136,16 @@ type ChatorderBlockFieldProps = {
 	order: ChatOrderItem[];
 	persons: PersonType[];
 	setOrder: (order: ChatOrderItem[]) => void;
+	handleDeleteComment: (id: number) => void;
+	handleDeleteLoop: (id: number) => void;
 };
 
 export const ChatOrderBlockField = ({
 	order,
 	persons,
 	setOrder,
+	handleDeleteComment,
+	handleDeleteLoop,
 }: ChatorderBlockFieldProps) => {
 	const handleChangeCommentPerson = (id: number, personId: number) => {
 		setOrder(
@@ -137,6 +173,8 @@ export const ChatOrderBlockField = ({
 					persons={persons}
 					handleChangeLoopIteration={handleChangeLoopIteration}
 					handleChangeCommentPerson={handleChangeCommentPerson}
+					handleDeleteComment={handleDeleteComment}
+					handleDeleteLoop={handleDeleteLoop}
 				/>
 			))}
 		</div>

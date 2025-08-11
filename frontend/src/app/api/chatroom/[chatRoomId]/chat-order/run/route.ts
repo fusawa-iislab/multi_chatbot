@@ -3,7 +3,7 @@ import type { ChatDataType } from "../../../../../../types";
 
 export async function POST(
 	request: NextRequest,
-	{ params }: { params: { chatRoomId: string } },
+	{ params }: { params: Promise<{ chatRoomId: string }> },
 ) {
 	const { chatRoomId } = await params;
 	const order = await request.json();

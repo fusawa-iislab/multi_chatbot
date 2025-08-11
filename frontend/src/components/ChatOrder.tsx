@@ -121,9 +121,17 @@ export const ChatOrder = () => {
 	if (isLoading) return <div>Loading...</div>;
 	if (!chatRoom) return <div>No chat room data found</div>;
 
+	const getNextId = (): number => {
+		const hasItems = order.length > 0;
+		const currentMaxId = hasItems
+			? Math.max(...order.map((item) => item.id))
+			: 0;
+		return currentMaxId + 1;
+	};
+
 	const handleAddComment = () => {
 		const newComment: ChatOrderComment = {
-			id: order.length + 1,
+			id: getNextId(),
 			type: "comment",
 			personId: chatRoom.persons[0].id,
 			parentId: parentIds.at(-1) || null,
@@ -135,7 +143,7 @@ export const ChatOrder = () => {
 
 	const handleAddLoop = () => {
 		const newLoop: ChatOrderLoop = {
-			id: order.length + 1,
+			id: getNextId(),
 			type: "loop",
 			iteration: 3, // Default iteration
 			parentId: parentIds.at(-1) || null,
@@ -160,6 +168,34 @@ export const ChatOrder = () => {
 		setOrder([]);
 		setLoopDepth(0);
 		setParentIds([]);
+	};
+
+	const handleDeleteComment = (id: number) => {
+		setOrder(order.filter((item) => item.id !== id));
+	};
+
+	const handleDeleteLoop = (id: number) => {
+		// Collect the loop and all of its descendants
+		const idsToRemove = new Set<number>();
+		const stack: number[] = [id];
+		while (stack.length > 0) {
+			const currentId = stack.pop() as number;
+			if (idsToRemove.has(currentId)) continue;
+			idsToRemove.add(currentId);
+			for (const item of order) {
+				if (item.parentId === currentId) {
+					stack.push(item.id);
+				}
+			}
+		}
+
+		const newOrder = order.filter((item) => !idsToRemove.has(item.id));
+		const newParentIds = parentIds.filter((pid) => !idsToRemove.has(pid));
+		const newLoopDepth = newOrder.at(-1)?.loopDepth ?? 0;
+
+		setOrder(newOrder);
+		setParentIds(newParentIds);
+		setLoopDepth(newLoopDepth);
 	};
 
 	const handleSaveOrder = async () => {
@@ -221,6 +257,8 @@ export const ChatOrder = () => {
 							order={order}
 							persons={chatRoom.persons}
 							setOrder={setOrder}
+							handleDeleteComment={handleDeleteComment}
+							handleDeleteLoop={handleDeleteLoop}
 						/>
 					)}
 
