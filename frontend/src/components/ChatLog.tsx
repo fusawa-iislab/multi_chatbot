@@ -4,9 +4,15 @@ import type { ChatDataType } from "../types";
 
 type ChatLogProps = {
 	chatLog: ChatDataType[];
+	width?: string;
+	maxHeight?: string;
 };
 
-export const ChatLog: React.FC<ChatLogProps> = ({ chatLog }) => {
+export const ChatLog: React.FC<ChatLogProps> = ({
+	chatLog,
+	width = "95%",
+	maxHeight = "50vh",
+}) => {
 	const chatContainerRef = useRef<HTMLDivElement>(null);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies:
@@ -22,7 +28,8 @@ export const ChatLog: React.FC<ChatLogProps> = ({ chatLog }) => {
 	return (
 		<div
 			ref={chatContainerRef}
-			className="flex flex-col bg-gray-900 mb-4 w-[95%] max-h-[50vh] overflow-y-auto border border-gray-300 divide-y divide-gray-300"
+			className="flex flex-col bg-gray-900 mb-4 overflow-y-auto border border-gray-300 divide-y divide-gray-300"
+			style={{ width, maxHeight }}
 		>
 			{chatLog.map((chat) => (
 				<div key={chat.id} className="p-2 bg-transparent">

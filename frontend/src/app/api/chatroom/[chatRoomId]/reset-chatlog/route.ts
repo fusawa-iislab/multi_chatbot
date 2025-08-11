@@ -7,7 +7,7 @@ export async function POST(
 	const { chatRoomId } = await params;
 
 	const res = await fetch(
-		`${process.env.BACKEND_API_URL}/api/chatroom/${chatRoomId}/reset-chatlog`,
+		`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/chatroom/${chatRoomId}/reset-chatlog`,
 		{
 			method: "POST",
 		},

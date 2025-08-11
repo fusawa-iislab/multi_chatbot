@@ -1,9 +1,9 @@
 "use client";
 import CloseIcon from "@mui/icons-material/Close";
+import { Wrench } from "phosphor-react";
 import { useState } from "react";
 import { mutate } from "swr";
 import type { PersonType } from "../types";
-import { Wrench } from "phosphor-react";
 
 export const PersonsInfoListItem: React.FC<{
 	person: PersonType;

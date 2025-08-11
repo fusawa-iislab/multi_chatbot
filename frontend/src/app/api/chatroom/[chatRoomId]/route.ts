@@ -6,7 +6,7 @@ export async function GET(
 ) {
 	const { chatRoomId } = await params;
 	const data = await fetch(
-		`${process.env.BACKEND_API_URL}/api/chatroom/${chatRoomId}`,
+		`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/chatroom/${chatRoomId}`,
 	);
 	if (!data.ok) {
 		return NextResponse.json(
@@ -27,7 +27,7 @@ export async function DELETE(
 ) {
 	const { chatRoomId } = await params;
 	const data = await fetch(
-		`${process.env.BACKEND_API_URL}/api/chatroom/${chatRoomId}`,
+		`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/chatroom/${chatRoomId}`,
 		{ method: "DELETE" },
 	);
 	if (!data.ok) {

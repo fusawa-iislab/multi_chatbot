@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
 	const body = await req.json();
 	const res = await fetch(
-		`${process.env.BACKEND_API_URL}/api/chatroom/create`,
+		`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/chatroom/create`,
 		{
 			method: "POST",
 			body: JSON.stringify(body),
