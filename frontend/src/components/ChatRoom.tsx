@@ -87,9 +87,14 @@ export const ChatRoom = () => {
 				</button>
 			</div>
 			<h1 className="text-2xl font-bold mb-4">Chatroom</h1>
-			<Link href={`/chatroom/${chatRoomId}/order`} className="text-blue-500">
-				order(テスト中)
-			</Link>
+			<div className="flex gap-4 mb-4">
+				<Link
+					href={`/chatroom/${chatRoomId}/order`}
+					className="text-blue-500 bg-blue-100 p-2 rounded-md"
+				>
+					order
+				</Link>
+			</div>
 			{chatRoom.chatDatas.length > 0 && (
 				<div className="w-full flex flex-col items-center mb-3">
 					<div className="flex items-center gap-4 self-start mb-2">
