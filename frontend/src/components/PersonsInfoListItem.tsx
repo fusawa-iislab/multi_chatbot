@@ -115,7 +115,7 @@ export const PersonsInfoListItem: React.FC<{
 						onChange={(e) => setSavedName(e.target.value)}
 						rows={1}
 						placeholder={person.name}
-					></textarea>
+					/>
 				)}
 				{!editMode && (
 					<button
@@ -138,7 +138,7 @@ export const PersonsInfoListItem: React.FC<{
 						maxLength={500}
 						cols={37}
 						onChange={(e) => setSavedPersona(e.target.value)}
-					></textarea>
+					/>
 				) : (
 					<textarea
 						className="resize-none"
@@ -146,7 +146,7 @@ export const PersonsInfoListItem: React.FC<{
 						cols={37}
 						readOnly
 						disabled
-					></textarea>
+					/>
 				)}
 			</p>
 
@@ -181,12 +181,13 @@ export const PersonsInfoListItem: React.FC<{
 						onClick={async () => {
 							await setEditMode(false);
 						}}
+						type="button"
 					>
 						Cancel
 					</button>
 
 					{/* Spacing between "cancel" and "confirm" buttons */}
-					<a className="px-2"></a>
+					<a href="" className="px-2" />
 
 					{person.isUser ? (
 						/* User confirm requirements */
