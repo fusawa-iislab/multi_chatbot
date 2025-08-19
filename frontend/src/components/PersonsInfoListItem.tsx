@@ -187,7 +187,7 @@ export const PersonsInfoListItem: React.FC<{
 					</button>
 
 					{/* Spacing between "cancel" and "confirm" buttons */}
-					<a href="" className="px-2" />
+					<a id="space element" href="" className="px-2" />
 
 					{person.isUser ? (
 						/* User confirm requirements */
