@@ -72,18 +72,20 @@ export const PersonsInfoListItem: React.FC<{
 		newPersona: string,
 		personId: number,
 	) => {
+		let realNewName = newName;
+		let realNewPersona = newPersona;
 		if (newName === "") {
-			newName === person.name;
+			realNewName = person.name;
 		}
 		if (newPersona === "") {
-			newPersona === person.persona;
+			realNewPersona = person.persona;
 		}
-		if (newName !== person.name || newPersona !== person.persona) {
+		if (realNewName !== person.name || realNewPersona !== person.persona) {
 			const res = await fetch(`/api/chatroom/${chatRoomId}`, {
 				method: "POST",
 				body: JSON.stringify({
-					name: newName,
-					persona: newPersona,
+					name: realNewName,
+					persona: realNewPersona,
 					chatRoomId: chatRoomId,
 					personId: personId,
 				}),
@@ -105,8 +107,7 @@ export const PersonsInfoListItem: React.FC<{
 					: "flex flex-col bg-white shadow rounded-xl p-4 border border-gray-200"
 			}
 		>
-			<h2 className="text-lg font-semibold text-gray-700 mb-1 flex items-center justify-between"
-				style={{ minHeight: "35px" }}>
+			<h2 className="text-lg font-semibold text-gray-700 mb-1 flex items-center justify-between">
 				{!editMode ? (
 					person.name
 				) : (
@@ -175,9 +176,11 @@ export const PersonsInfoListItem: React.FC<{
 			)}
 
 			{editMode && (
-				<div className="text-right">
+				<div className="text-right flex gap-2 self-end">
 					<button
-						className={"px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"}
+						className={
+							"px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+						}
 						onClick={async () => {
 							await setEditMode(false);
 						}}
@@ -185,9 +188,6 @@ export const PersonsInfoListItem: React.FC<{
 					>
 						Cancel
 					</button>
-
-					{/* Spacing between "cancel" and "confirm" buttons */}
-					<a id="space element" href="" className="px-2" />
 
 					{person.isUser ? (
 						/* User confirm requirements */
@@ -211,7 +211,7 @@ export const PersonsInfoListItem: React.FC<{
 						<button
 							className={
 								(savedName !== "" && savedName !== person.name) ||
-									(savedPersona !== "" && savedPersona !== person.persona)
+								(savedPersona !== "" && savedPersona !== person.persona)
 									? "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
 									: "px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
 							}
