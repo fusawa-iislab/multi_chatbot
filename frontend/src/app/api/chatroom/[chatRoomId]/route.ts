@@ -65,7 +65,7 @@ export async function POST(
 		},
 	);
 	if (res.ok) {
-		const data = await res.json();
+		// const data = await res.json();
 		return NextResponse.json({
 			name: name,
 			persona: persona,
