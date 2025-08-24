@@ -139,21 +139,6 @@ export const ChatRoom = () => {
 					order
 				</Link>
 			</div>
-			{chatRoom.chatDatas.length > 0 && (
-				<div className="w-full flex flex-col items-center mb-3">
-					<div className="flex items-center gap-4 self-start mb-2">
-						<h2 className="text-xl font-bold mb-2">Chat Log</h2>
-						<button
-							className="bg-blue-500 text-white text-sm p-2 rounded-md flex items-center"
-							onClick={() => handleResetChatLog(chatRoomId)}
-							type="button"
-						>
-							Reset Log
-						</button>
-					</div>
-					<ChatLog chatLog={chatRoom.chatDatas} />
-				</div>
-			)}
 			<div className="flex flex-col gap-2 mb-4">
 				<h2 className="text-xl font-bold mb-2">Title</h2>
 				{isEditingTitle ? (
@@ -169,7 +154,7 @@ export const ChatRoom = () => {
 									setChatRoomEditingTitle(chatRoom.title);
 								}
 							}}
-						/>
+							/>
 						<button
 							className="bg-blue-500 text-white p-2 rounded-md w-[5rem] hover:bg-blue-600 transition-colors"
 							onClick={async (e) => {
@@ -183,7 +168,7 @@ export const ChatRoom = () => {
 								setIsEditingTitle(false);
 							}}
 							type="button"
-						>
+							>
 							Save
 						</button>
 						<button
@@ -193,15 +178,15 @@ export const ChatRoom = () => {
 								setChatRoomEditingTitle(chatRoom.title);
 							}}
 							type="button"
-						>
+							>
 							Cancel
 						</button>
 					</div>
 				) : (
 					<button
-						className="text-xl mb-2 cursor-pointer text-left bg-transparent border-none p-0"
-						onClick={() => setIsEditingTitle(true)}
-						type="button"
+					className="text-xl mb-2 cursor-pointer text-left bg-transparent border-none p-0"
+					onClick={() => setIsEditingTitle(true)}
+					type="button"
 					>
 						{chatRoom.title}
 					</button>
@@ -213,6 +198,21 @@ export const ChatRoom = () => {
 					chatRoomId={Number(chatRoomId)}
 				/>
 			</div>
+			{chatRoom.chatDatas.length > 0 && (
+				<div className="w-full flex flex-col items-center mb-3">
+					<div className="flex items-center gap-4 self-start mb-2">
+						<h2 className="text-xl font-bold mb-2">Chat Log</h2>
+						<button
+							className="bg-blue-500 text-white text-sm p-2 rounded-md flex items-center"
+							onClick={() => handleResetChatLog(chatRoomId)}
+							type="button"
+						>
+							Reset Log
+						</button>
+					</div>
+					<ChatLog chatLog={chatRoom.chatDatas} />
+				</div>
+			)}
 		</div>
 	);
 };
