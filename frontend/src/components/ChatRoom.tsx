@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import useSWR from "swr";
-
 import { ArrowLeft } from "phosphor-react";
+import { useEffect, useState } from "react";
+import useSWR, { mutate } from "swr";
 
 import type { ChatRoomType } from "../types";
 import { ChatLog } from "./ChatLog";
@@ -23,6 +23,40 @@ const ChatRoomFetcher = async (
 	}
 };
 
+const handleUpdateTitle = async (
+	chatRoomId: string,
+	currentTitle: string,
+	newTitle: string,
+	setChatRoomEditingTitle: (title: string) => void,
+) => {
+	if (currentTitle === newTitle) {
+		return;
+	}
+	if (newTitle === "") {
+		alert("Title cannot be empty");
+		setChatRoomEditingTitle(currentTitle);
+		return;
+	}
+	if (
+		!window.confirm(
+			`Are you sure you want to update the title from "${currentTitle}" to "${newTitle}"?`,
+		)
+	) {
+		return;
+	}
+
+	const res = await fetch(`/api/chatroom/${chatRoomId}/title`, {
+		method: "PUT",
+		body: JSON.stringify({ title: newTitle }),
+	});
+	if (!res.ok) {
+		alert("Failed to update title");
+		setChatRoomEditingTitle(currentTitle);
+		return;
+	}
+	await mutate(`/api/chatroom/${chatRoomId}`);
+};
+
 export const ChatRoom = () => {
 	const router = useRouter();
 	const { chatRoomId } = useParams<{ chatRoomId: string }>();
@@ -31,6 +65,16 @@ export const ChatRoom = () => {
 		chatRoomId ? `/api/chatroom/${chatRoomId}` : null,
 		ChatRoomFetcher,
 	);
+
+	const [isEditingTitle, setIsEditingTitle] = useState(false);
+	const [chatRoomEditingTitle, setChatRoomEditingTitle] = useState("");
+
+	// chatRoomが読み込まれたときにchatRoomEditingTitleを更新
+	useEffect(() => {
+		if (chatRoom?.title) {
+			setChatRoomEditingTitle(chatRoom.title);
+		}
+	}, [chatRoom?.title]);
 
 	const isLoading = !chatRoom && !chatRoomError;
 
@@ -110,6 +154,59 @@ export const ChatRoom = () => {
 					<ChatLog chatLog={chatRoom.chatDatas} />
 				</div>
 			)}
+			<div className="flex flex-col gap-2 mb-4">
+				<h2 className="text-xl font-bold mb-2">Title</h2>
+				{isEditingTitle ? (
+					<div className="flex items-center gap-2">
+						<input
+							className="text-xl mb-2"
+							type="text"
+							value={chatRoomEditingTitle}
+							onChange={(e) => setChatRoomEditingTitle(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === "Escape") {
+									setIsEditingTitle(false);
+									setChatRoomEditingTitle(chatRoom.title);
+								}
+							}}
+						/>
+						<button
+							className="bg-blue-500 text-white p-2 rounded-md w-[5rem] hover:bg-blue-600 transition-colors"
+							onClick={async (e) => {
+								e.preventDefault();
+								await handleUpdateTitle(
+									chatRoomId,
+									chatRoom.title,
+									chatRoomEditingTitle,
+									setChatRoomEditingTitle,
+								);
+								setIsEditingTitle(false);
+							}}
+							type="button"
+						>
+							Save
+						</button>
+						<button
+							className="bg-gray-500 text-white p-2 rounded-md w-[5rem] hover:bg-gray-600 transition-colors"
+							onClick={() => {
+								setIsEditingTitle(false);
+								setChatRoomEditingTitle(chatRoom.title);
+							}}
+							type="button"
+						>
+							Cancel
+						</button>
+					</div>
+				) : (
+					<button
+						className="text-xl mb-2 cursor-pointer text-left bg-transparent border-none p-0"
+						onClick={() => setIsEditingTitle(true)}
+						type="button"
+					>
+						{chatRoom.title}
+					</button>
+				)}
+			</div>
 			<div>
 				<PersonInfoList
 					persons={chatRoom?.persons ?? []}
