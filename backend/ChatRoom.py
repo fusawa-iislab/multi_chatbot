@@ -55,7 +55,7 @@ class ChatRoom:
         self.persons.append(person)
         return person.id
 
-    def add_chatdata(self, name: int, person_id: int, content: str, chatroom_id: int):
+    def add_chatdata(self, name: str, person_id: int, content: str, chatroom_id: int):
         chatdata = ChatData(
             name=name, person_id=person_id, content=content, chatroom_id=chatroom_id
         )

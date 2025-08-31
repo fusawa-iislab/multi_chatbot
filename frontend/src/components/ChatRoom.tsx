@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import useSWR, { mutate } from "swr";
 
 import type { ChatRoomType } from "../types";
+import { BottomTextArea } from "./BottomTextArea";
 import { ChatLog } from "./ChatLog";
 import { PersonInfoList } from "./PersonsInfoList";
 
@@ -24,7 +25,7 @@ const ChatRoomFetcher = async (
 };
 
 const handleUpdateTitle = async (
-	chatRoomId: string,
+	chatRoomId: number,
 	currentTitle: string,
 	newTitle: string,
 	setChatRoomEditingTitle: (title: string) => void,
@@ -68,6 +69,8 @@ export const ChatRoom = () => {
 
 	const [isEditingTitle, setIsEditingTitle] = useState(false);
 	const [chatRoomEditingTitle, setChatRoomEditingTitle] = useState("");
+
+	const [textareaPersonId, setTextareaPersonId] = useState<number | null>(null);
 
 	// chatRoomが読み込まれたときにchatRoomEditingTitleを更新
 	useEffect(() => {
@@ -154,13 +157,13 @@ export const ChatRoom = () => {
 									setChatRoomEditingTitle(chatRoom.title);
 								}
 							}}
-							/>
+						/>
 						<button
 							className="bg-blue-500 text-white p-2 rounded-md w-[5rem] hover:bg-blue-600 transition-colors"
 							onClick={async (e) => {
 								e.preventDefault();
 								await handleUpdateTitle(
-									chatRoomId,
+									Number(chatRoomId),
 									chatRoom.title,
 									chatRoomEditingTitle,
 									setChatRoomEditingTitle,
@@ -168,7 +171,7 @@ export const ChatRoom = () => {
 								setIsEditingTitle(false);
 							}}
 							type="button"
-							>
+						>
 							Save
 						</button>
 						<button
@@ -178,15 +181,15 @@ export const ChatRoom = () => {
 								setChatRoomEditingTitle(chatRoom.title);
 							}}
 							type="button"
-							>
+						>
 							Cancel
 						</button>
 					</div>
 				) : (
 					<button
-					className="text-xl mb-2 cursor-pointer text-left bg-transparent border-none p-0"
-					onClick={() => setIsEditingTitle(true)}
-					type="button"
+						className="text-xl mb-2 cursor-pointer text-left bg-transparent border-none p-0"
+						onClick={() => setIsEditingTitle(true)}
+						type="button"
 					>
 						{chatRoom.title}
 					</button>
@@ -196,6 +199,8 @@ export const ChatRoom = () => {
 				<PersonInfoList
 					persons={chatRoom?.persons ?? []}
 					chatRoomId={Number(chatRoomId)}
+					textareaPersonId={textareaPersonId}
+					setTextareaPersonId={setTextareaPersonId}
 				/>
 			</div>
 			{chatRoom.chatDatas.length > 0 && (
@@ -212,6 +217,17 @@ export const ChatRoom = () => {
 					</div>
 					<ChatLog chatLog={chatRoom.chatDatas} />
 				</div>
+			)}
+			{textareaPersonId && (
+				<BottomTextArea
+					chatRoomId={Number(chatRoomId)}
+					personId={textareaPersonId}
+					setTextareaPersonId={setTextareaPersonId}
+					personName={
+						chatRoom.persons.find((person) => person.id === textareaPersonId)
+							?.name || ""
+					}
+				/>
 			)}
 		</div>
 	);
