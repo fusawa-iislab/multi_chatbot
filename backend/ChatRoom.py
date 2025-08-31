@@ -1,5 +1,5 @@
 from ChatData import ChatData
-from ChatOrder import ChatOrder, create_chatorder
+from ChatOrder import ChatOrder, create_chatorder, create_chatorder_from_chatlog    
 from llm import get_response
 from Person import Person
 

@@ -1,6 +1,7 @@
 import asyncio
 import os
 
+from ChatOrder import create_chatorder_from_chatlog
 from ChatRoom import create_chatroom
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
@@ -142,6 +143,14 @@ async def reset_chatlog(chatroom_id: int):
     chatroom.chatdatas = []
     return {"message": "Chatlog reset successfully"}
 
+
+@app.post("/api/chatroom/{chatroom_id}/chat-order/from-chatlog")
+async def save_chat_order_from_chatlog(chatroom_id: int):
+    chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
+    if not chatroom:
+        return {"error": "Chat room not found"}, 404
+    chatroom.chatorder = create_chatorder_from_chatlog(chatroom.chatdatas, chatroom_id)
+    return {"message": "Chat order saved successfully"}
 
 @app.websocket("/api/chatroom/{chatroom_id}/chat-order/run")
 async def run_chat_order(websocket: WebSocket, chatroom_id: int):
