@@ -1,6 +1,7 @@
 import asyncio
 import os
 
+from ChatOrder import create_chatorder_from_chatlog
 from ChatRoom import create_chatroom
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
@@ -30,7 +31,6 @@ async def get_chatrooms():
 @app.post("/api/chatroom/create")
 async def create_new_chatroom(request: Request):
     data = await request.json()
-    print(f"Received data: {data}")
     title = data.get("title")
     persons = data.get("persons")
     for person in persons:
@@ -42,10 +42,8 @@ async def create_new_chatroom(request: Request):
 
 @app.get("/api/chatroom/{chatroom_id}")
 async def get_chatroom(chatroom_id: int):
-    print(f"chatroom_id: {chatroom_id}")
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if chatroom:
-        print(chatroom.to_frontend())
         return chatroom.to_frontend()
     return {"error": "Chat room not found"}, 404
 
@@ -96,14 +94,12 @@ async def edit_person(request: Request):
     }
 
 
-@app.post("/api/chatroom/{chatroom_id}/chat-reply")
-async def chat_reply(chatroom_id: int, request: Request):
+@app.post("/api/chatroom/{chatroom_id}/auto-reply")
+async def auto_reply(chatroom_id: int, request: Request):
     data = await request.json()
-    print(f"Received data: {data}")
     person_id = data.get("personId")
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if not chatroom:
-        print(f"Chat room {chatroom_id} not found")
         return {"error": "Chat room not found"}, 404
     person = next((p for p in chatroom.persons if p.id == person_id), None)
     if not person:
@@ -119,7 +115,7 @@ async def chat_reply(chatroom_id: int, request: Request):
     ).to_frontend()
 
 
-@app.post("/api/chatroom/{chatroom_id}/user-chat")
+@app.post("/api/chatroom/{chatroom_id}/chat")
 async def user_input(chatroom_id: int, request: Request):
     data = await request.json()
     person_id = data.get("personId")
@@ -130,10 +126,12 @@ async def user_input(chatroom_id: int, request: Request):
         return {"error": "Chat room not found"}, 404
 
     person = next((p for p in chatroom.persons if p.id == person_id), None)
-    if not person or not person.is_user:
-        return {"error": "Invalid user"}, 400
+    if not person:
+        return {"error": "Person not found"}, 400
 
-    chatroom.add_chatdata(name=person.name, content=content, chatroom_id=chatroom_id)
+    chatroom.add_chatdata(
+        name=person.name, person_id=person_id, content=content, chatroom_id=chatroom_id
+    )
     return {"message": "Message sent successfully"}
 
 
@@ -145,6 +143,14 @@ async def reset_chatlog(chatroom_id: int):
     chatroom.chatdatas = []
     return {"message": "Chatlog reset successfully"}
 
+
+@app.post("/api/chatroom/{chatroom_id}/chat-order/from-chatlog")
+async def save_chat_order_from_chatlog(chatroom_id: int):
+    chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
+    if not chatroom:
+        return {"error": "Chat room not found"}, 404
+    chatroom.chatorder = create_chatorder_from_chatlog(chatroom.chatdatas, chatroom_id)
+    return {"message": "Chat order saved successfully"}
 
 @app.websocket("/api/chatroom/{chatroom_id}/chat-order/run")
 async def run_chat_order(websocket: WebSocket, chatroom_id: int):

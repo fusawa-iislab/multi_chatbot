@@ -1,5 +1,4 @@
 "use client";
-import CloseIcon from "@mui/icons-material/Close";
 import { Wrench } from "phosphor-react";
 import { useState } from "react";
 import { mutate } from "swr";
@@ -8,15 +7,15 @@ import type { PersonType } from "../types";
 export const PersonsInfoListItem: React.FC<{
 	person: PersonType;
 	chatRoomId: number;
-}> = ({ person, chatRoomId }) => {
-	const [textareaIsOpen, setTextareaIsOpen] = useState(false);
-	const [userMessage, setUserMessage] = useState<string>("");
+	textareaPersonId: number | null;
+	setTextareaPersonId: (id: number | null) => void;
+}> = ({ person, chatRoomId, textareaPersonId, setTextareaPersonId }) => {
 	const [editMode, setEditMode] = useState(false);
 	const [savedName, setSavedName] = useState<string>(person.name);
 	const [savedPersona, setSavedPersona] = useState<string>(person.persona);
 
 	const ChatBotReply = async (personId: number) => {
-		await fetch(`/api/chatroom/${chatRoomId}/chat-reply`, {
+		await fetch(`/api/chatroom/${chatRoomId}/auto-reply`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ personId }),
@@ -28,33 +27,6 @@ export const PersonsInfoListItem: React.FC<{
 			.catch((error) => {
 				console.error("Error getting reply:", error);
 			});
-	};
-
-	const handleSendMessage = async () => {
-		if (!userMessage.trim()) {
-			alert("Please enter a message.");
-			return;
-		}
-
-		if (!person.isUser) {
-			alert("You can only send messages as a user.");
-			return;
-		}
-
-		const res = await fetch(`/api/chatroom/${chatRoomId}/user-chat`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ personId: person.id, content: userMessage }),
-		});
-
-		if (!res.ok) {
-			alert("Failed to send message");
-			return;
-		}
-
-		setUserMessage("");
-		setTextareaIsOpen(false);
-		mutate(`/api/chatroom/${chatRoomId}`);
 	};
 
 	const personEditHandler = async () => {
@@ -122,7 +94,7 @@ export const PersonsInfoListItem: React.FC<{
 					<button
 						onClick={() => {
 							personEditHandler();
-							setTextareaIsOpen(false);
+							setTextareaPersonId(null);
 						}}
 						type="button"
 					>
@@ -152,25 +124,38 @@ export const PersonsInfoListItem: React.FC<{
 			</p>
 
 			{!editMode && (
-				<div className="text-right">
+				<div className="self-end">
 					{person.isUser ? (
 						<button
 							className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
 							onClick={() => {
-								setTextareaIsOpen(!textareaIsOpen);
+								setTextareaPersonId(person.id);
 							}}
 							type="button"
 						>
-							{textareaIsOpen ? "Cancel" : "Send Message"}
+							{textareaPersonId === person.id ? "Cancel" : "Send"}
 						</button>
 					) : (
-						<button
-							className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
-							onClick={async () => await ChatBotReply(person.id)}
-							type="button"
-						>
-							Reply
-						</button>
+						<div className="flex gap-2 self-end">
+							<button
+								className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+								onClick={() => {
+									setTextareaPersonId(person.id);
+								}}
+								type="button"
+							>
+								{textareaPersonId === person.id
+									? "Cancel"
+									: `Reply as ${person.name}`}
+							</button>
+							<button
+								className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+								onClick={async () => await ChatBotReply(person.id)}
+								type="button"
+							>
+								Generate
+							</button>
+						</div>
 					)}
 				</div>
 			)}
@@ -228,33 +213,6 @@ export const PersonsInfoListItem: React.FC<{
 							Confirm
 						</button>
 					)}
-				</div>
-			)}
-
-			{textareaIsOpen && person.isUser && (
-				<div className="fixed bottom-0 left-0 right-0 w-screen flex flex-col items-center bg-gray-800 p-2">
-					<button
-						className="self-end p-2"
-						onClick={() => setTextareaIsOpen(false)}
-						type="button"
-					>
-						<CloseIcon className="text-gray-100" />
-					</button>
-					<textarea
-						className="mt-2 w-7/8  p-2 border border-gray-400 rounded resize-none"
-						rows={3}
-						onChange={(e) =>
-							setUserMessage((e.target as HTMLTextAreaElement).value)
-						}
-						value={userMessage}
-					/>
-					<button
-						className="self-end mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-						onClick={handleSendMessage}
-						type="button"
-					>
-						Send
-					</button>
 				</div>
 			)}
 		</div>
