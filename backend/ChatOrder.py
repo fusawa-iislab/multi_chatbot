@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from ChatData import ChatData
 
 
@@ -134,6 +135,7 @@ def format_chatorder(input: list):
 def create_chatorder(input: list, chatroom_id: int):
     order = format_chatorder(input)
     return ChatOrder(order, chatroom_id)
+
 
 def create_chatorder_from_chatlog(chatdatas: list[ChatData], chatroom_id: int):
     order = []

@@ -152,6 +152,7 @@ async def save_chat_order_from_chatlog(chatroom_id: int):
     chatroom.chatorder = create_chatorder_from_chatlog(chatroom.chatdatas, chatroom_id)
     return {"message": "Chat order saved successfully"}
 
+
 @app.websocket("/api/chatroom/{chatroom_id}/chat-order/run")
 async def run_chat_order(websocket: WebSocket, chatroom_id: int):
     try:

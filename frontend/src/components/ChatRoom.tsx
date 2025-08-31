@@ -59,9 +59,12 @@ const handleUpdateTitle = async (
 };
 
 const handleSaveOrder = async (chatRoomId: number) => {
-	const res = await fetch(`/api/chatroom/${chatRoomId}/chat-order/from-chatlog`, {
-		method: "POST",
-	});
+	const res = await fetch(
+		`/api/chatroom/${chatRoomId}/chat-order/from-chatlog`,
+		{
+			method: "POST",
+		},
+	);
 	if (!res.ok) {
 		alert("Failed to save order");
 		return;

@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: NextRequest, { params }: { params: { chatRoomId: number } }) {
+export async function POST(
+	request: NextRequest,
+	{ params }: { params: Promise<{ chatRoomId: string }> },
+) {
 	const { chatRoomId } = await params;
 
 	const res = await fetch(
@@ -11,8 +14,11 @@ export async function POST(request: NextRequest, { params }: { params: { chatRoo
 	);
 
 	if (!res.ok) {
-		return NextResponse.json({ message: "Failed to save order" }, { status: 500 });
+		return NextResponse.json(
+			{ message: "Failed to save order" },
+			{ status: 500 },
+		);
 	}
 
 	return NextResponse.json({ message: "Order saved successfully" });
-}   
+}
