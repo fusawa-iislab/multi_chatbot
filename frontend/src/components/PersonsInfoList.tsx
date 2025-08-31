@@ -4,15 +4,11 @@ import { PersonsInfoListItem } from "./PersonsInfoListItem";
 type PersonInfoListProps = {
 	persons: PersonType[];
 	chatRoomId: number;
-	textareaPersonId: number | null;
-	setTextareaPersonId: (id: number | null) => void;
 };
 
 export const PersonInfoList: React.FC<PersonInfoListProps> = ({
 	persons,
-	chatRoomId,
-	textareaPersonId,
-	setTextareaPersonId,
+	chatRoomId, // Default to 0 if chatRoomId is not provided
 }) => {
 	return (
 		<div className="grid grid-cols-3 gap-2">
@@ -21,8 +17,6 @@ export const PersonInfoList: React.FC<PersonInfoListProps> = ({
 					key={person.id}
 					person={person}
 					chatRoomId={chatRoomId}
-					textareaPersonId={textareaPersonId}
-					setTextareaPersonId={setTextareaPersonId}
 				/>
 			))}
 		</div>
