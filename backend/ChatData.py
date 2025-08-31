@@ -2,7 +2,7 @@ class ChatData:
     id = 1
 
     def __init__(
-        self, name: str, person_id: int, content: str, chatroom_id: int | None = None
+        self, name: int, person_id: int, content: str, chatroom_id: int | None = None
     ):
         self.id = ChatData.id
         ChatData.id += 1
