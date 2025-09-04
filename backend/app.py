@@ -1,12 +1,15 @@
 import asyncio
+import copy
 import os
 
 from ChatOrder import create_chatorder_from_chatlog
 from ChatRoom import create_chatroom
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from Person import Person
 from test_data import chatrooms_data
+from utils import generate_unique_title
 
 load_dotenv()
 
@@ -35,7 +38,17 @@ async def create_new_chatroom(request: Request):
     persons = data.get("persons")
     for person in persons:
         person["is_user"] = person.pop("isUser")
-    chatroom = create_chatroom(title=title, persons_data=persons)
+    persons = [
+        Person(
+            name=person.get("name"),
+            persona=person.get("persona", None),
+            is_user=person.get("is_user"),
+        )
+        for person in persons
+    ]
+    chatroom = create_chatroom(
+        title=generate_unique_title(title, chatrooms_data), persons=persons
+    )
     chatrooms_data.append(chatroom)
     return {"chatRoomId": chatroom.id}
 
@@ -45,7 +58,7 @@ async def get_chatroom(chatroom_id: int):
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if chatroom:
         return chatroom.to_frontend()
-    return {"error": "Chat room not found"}, 404
+    raise HTTPException(status_code=404, detail="Chat room not found")
 
 
 @app.delete("/api/chatroom/{chatroom_id}")
@@ -53,9 +66,27 @@ async def delete_chatroom(chatroom_id: int):
     global chatrooms_data
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if not chatroom:
-        return {"error": "チャットルームが見つかりません"}, 404
+        raise HTTPException(status_code=404, detail="チャットルームが見つかりません")
     chatrooms_data = [room for room in chatrooms_data if room.id != chatroom_id]
     return {"message": "チャットルームが正常に削除されました"}
+
+
+@app.post("/api/chatroom/{chatroom_id}/copy")
+async def copy_chatroom(chatroom_id: int):
+    chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
+    if not chatroom:
+        raise HTTPException(status_code=404, detail="Chat room not found")
+    persons = copy.deepcopy(chatroom.persons)
+    chatdatas = copy.deepcopy(chatroom.chatdatas)
+    chatorder = copy.deepcopy(chatroom.chatorder)
+    new_chatroom = create_chatroom(
+        title=generate_unique_title(chatroom.title, chatrooms_data),
+        persons=persons,
+        chatdatas=chatdatas,
+        chatorder=chatorder,
+    )
+    chatrooms_data.append(new_chatroom)
+    return {"message": "Chat room copied successfully"}
 
 
 @app.put("/api/chatroom/{chatroom_id}/title")
@@ -64,8 +95,8 @@ async def update_chatroom_title(chatroom_id: int, request: Request):
     title = data.get("title")
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if not chatroom:
-        return {"error": "Chat room not found"}, 404
-    chatroom.title = title
+        raise HTTPException(status_code=404, detail="Chat room not found")
+    chatroom.title = generate_unique_title(title, chatrooms_data)
     return {"message": "Chat room title updated successfully"}
 
 
@@ -78,12 +109,12 @@ async def edit_person(request: Request):
     new_persona = data.get("persona")
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if not chatroom:
-        return {"error": "Chat room not found"}, 404
+        raise HTTPException(status_code=404, detail="Chat room not found")
     person = next(
         (person for person in chatroom.persons if person.id == person_id), None
     )
     if not person:
-        return {"error": "Person not found"}, 404
+        raise HTTPException(status_code=404, detail="Person not found")
     person.name = new_name
     person.persona = new_persona
     return {
@@ -100,14 +131,14 @@ async def auto_reply(chatroom_id: int, request: Request):
     person_id = data.get("personId")
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if not chatroom:
-        return {"error": "Chat room not found"}, 404
+        raise HTTPException(status_code=404, detail="Chat room not found")
     person = next((p for p in chatroom.persons if p.id == person_id), None)
     if not person:
         print(f"Person with ID {person_id} not found in chat room {chatroom_id}")
-        return {"error": "Person not found"}, 404
+        raise HTTPException(status_code=404, detail="Person not found")
     if person.is_user:
         print(f"User {person.name} cannot be a chatbot in chat room {chatroom_id}")
-        return {"error": "User cannot be a chatbot"}, 400
+        raise HTTPException(status_code=400, detail="User cannot be a chatbot")
     chatdata_id = chatroom.next_response(person_id)
     return next(
         (chatdata for chatdata in chatroom.chatdatas if chatdata.id == chatdata_id),
@@ -123,11 +154,11 @@ async def user_input(chatroom_id: int, request: Request):
 
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if not chatroom:
-        return {"error": "Chat room not found"}, 404
+        raise HTTPException(status_code=404, detail="Chat room not found")
 
     person = next((p for p in chatroom.persons if p.id == person_id), None)
     if not person:
-        return {"error": "Person not found"}, 400
+        raise HTTPException(status_code=400, detail="Person not found")
 
     chatroom.add_chatdata(
         name=person.name, person_id=person_id, content=content, chatroom_id=chatroom_id
@@ -139,7 +170,7 @@ async def user_input(chatroom_id: int, request: Request):
 async def reset_chatlog(chatroom_id: int):
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if not chatroom:
-        return {"error": "Chat room not found"}, 404
+        raise HTTPException(status_code=404, detail="Chat room not found")
     chatroom.chatdatas = []
     return {"message": "Chatlog reset successfully"}
 
@@ -148,7 +179,7 @@ async def reset_chatlog(chatroom_id: int):
 async def save_chat_order_from_chatlog(chatroom_id: int):
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if not chatroom:
-        return {"error": "Chat room not found"}, 404
+        raise HTTPException(status_code=404, detail="Chat room not found")
     chatroom.chatorder = create_chatorder_from_chatlog(chatroom.chatdatas, chatroom_id)
     return {"message": "Chat order saved successfully"}
 
@@ -235,7 +266,7 @@ async def save_chat_order(chatroom_id: int, request: Request):
     data = await request.json()
     chatroom = next((room for room in chatrooms_data if room.id == chatroom_id), None)
     if not chatroom:
-        return {"error": "Chat room not found"}, 404
+        raise HTTPException(status_code=404, detail="Chat room not found")
     for item in data:
         item["loop_depth"] = item.pop("loopDepth")
         item["parent_id"] = item.pop("parentId")

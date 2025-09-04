@@ -20,7 +20,10 @@ export async function POST(
 		},
 	);
 	if (!data.ok) {
-		return NextResponse.json({ error: "Failed to get reply" }, { status: 500 });
+		const errorData = await data
+			.json()
+			.catch(() => ({ error: "Failed to get reply" }));
+		return NextResponse.json(errorData, { status: data.status });
 	}
 	const response: ChatDataType = await data.json();
 	if (!response || !response.content) {
