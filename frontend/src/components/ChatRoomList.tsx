@@ -2,7 +2,7 @@
 import Link from "next/link";
 import useSWR, { mutate } from "swr";
 
-import { Plus, Trash } from "phosphor-react";
+import { Copy, Plus, Trash } from "phosphor-react";
 
 import type { ChatRoomType } from "../types";
 
@@ -37,6 +37,22 @@ export const ChatRoomList = () => {
 		mutate("/api/chatrooms");
 	};
 
+	const handleCopy = async (
+		e: React.MouseEvent<HTMLButtonElement>,
+		chatRoomId: number,
+	) => {
+		e.stopPropagation();
+		e.preventDefault();
+		const res = await fetch(`/api/chatroom/${chatRoomId}/copy`, {
+			method: "POST",
+		});
+		if (!res.ok) {
+			alert("Failed to copy chat room");
+			return;
+		}
+		mutate("/api/chatrooms");
+	};
+
 	return (
 		<div className="p-4">
 			<h2 className="text-2xl font-bold mb-4">Chat Rooms</h2>
@@ -51,9 +67,14 @@ export const ChatRoomList = () => {
 					<Link key={room.id} href={`/chatroom/${room.id}`}>
 						<div className="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow flex items-center justify-between">
 							<p className="text-lg font-semibold">{room.title}</p>
-							<button onClick={(e) => handleDelete(e, room.id)} type="button">
-								<Trash size={24} />
-							</button>
+							<div className="flex items-center gap-2">
+								<button onClick={(e) => handleCopy(e, room.id)} type="button">
+									<Copy size={24} />
+								</button>
+								<button onClick={(e) => handleDelete(e, room.id)} type="button">
+									<Trash size={24} />
+								</button>
+							</div>
 						</div>
 					</Link>
 				))}

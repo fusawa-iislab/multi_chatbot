@@ -22,10 +22,10 @@ export async function POST(
 		},
 	);
 	if (!data.ok) {
-		return NextResponse.json(
-			{ error: "Failed to send message" },
-			{ status: 500 },
-		);
+		const errorData = await data
+			.json()
+			.catch(() => ({ error: "Failed to send message" }));
+		return NextResponse.json(errorData, { status: data.status });
 	}
 	return NextResponse.json({ message: "success" });
 }

@@ -15,12 +15,23 @@ const ChatRoomFetcher = async (
 ): Promise<ChatRoomType | undefined> => {
 	try {
 		const res = await fetch(url);
-		if (!res.ok) throw new Error("Failed to fetch chat rooms");
+		if (!res.ok) {
+			const errorData = await res
+				.json()
+				.catch(() => ({ error: "Unknown error" }));
+			throw new Error(
+				errorData.error || `HTTP ${res.status}: ${res.statusText}`,
+			);
+		}
 		const data = await res.json();
+		console.log(data);
+		if (!data.chatRoom) {
+			throw new Error("Chat room not found");
+		}
 		return data.chatRoom;
 	} catch (error) {
 		console.error(error);
-		return undefined;
+		throw error; // エラーを再スローして、SWRが適切にハンドリングできるようにする
 	}
 };
 
@@ -126,7 +137,18 @@ export const ChatRoom = () => {
 	};
 
 	if (isLoading) return <div>Loading...</div>;
-	if (chatRoomError) return <div>Error loading chat room</div>;
+	if (chatRoomError) {
+		// エラーメッセージを適切に表示
+		const errorMessage = chatRoomError.message || "Error loading chat room";
+		return (
+			<div className="p-4">
+				<div className="text-red-600 mb-4">Error: {errorMessage}</div>
+				<Link href="/chatrooms" className="text-blue-600 hover:underline">
+					← Back to Chat Rooms
+				</Link>
+			</div>
+		);
+	}
 	if (!chatRoom) return <div>No chat room found</div>;
 
 	return (

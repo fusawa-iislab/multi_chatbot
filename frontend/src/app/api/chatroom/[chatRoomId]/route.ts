@@ -8,12 +8,15 @@ export async function GET(
 	const data = await fetch(
 		`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/chatroom/${chatRoomId}`,
 	);
+
+	// バックエンドのエラーステータスを適切に伝播
 	if (!data.ok) {
-		return NextResponse.json(
-			{ error: "Failed to fetch chat room data" },
-			{ status: 500 },
-		);
+		const errorData = await data
+			.json()
+			.catch(() => ({ error: "Unknown error" }));
+		return NextResponse.json(errorData, { status: data.status });
 	}
+
 	const chatRoom = await data.json();
 	if (chatRoom) {
 		return NextResponse.json({ chatRoom: chatRoom });
@@ -31,10 +34,10 @@ export async function DELETE(
 		{ method: "DELETE" },
 	);
 	if (!data.ok) {
-		return NextResponse.json(
-			{ error: "Failed to delete chat room" },
-			{ status: 500 },
-		);
+		const errorData = await data
+			.json()
+			.catch(() => ({ error: "Unknown error" }));
+		return NextResponse.json(errorData, { status: data.status });
 	}
 	return NextResponse.json({ message: "Chat room deleted successfully" });
 }
